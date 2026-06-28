@@ -50,8 +50,8 @@ function _initLoadingSequence() {
     return;
   }
 
-  // Auto-load from Google Drive
-  const driveUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+  // Auto-load from Google Sheets (export as xlsx)
+  const driveUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`;
   if (loadBar) loadBar.style.width = '20%';
   if (loadMsg) loadMsg.textContent = 'Cargando datos del torneo…';
 
@@ -301,7 +301,7 @@ function _showAdminPanel(firstTime = false, errorMsg = '') {
 
         <div class="admin-section">
           <label class="admin-label"><i class="fab fa-google-drive me-2 text-warning"></i>Google Drive — File ID</label>
-          <p class="admin-hint">Abre el Excel en Drive → "Compartir" → "Cualquiera con el enlace puede ver" → copia el ID de la URL.</p>
+          <p class="admin-hint">De la URL de Google Sheets copia el ID: docs.google.com/spreadsheets/d/<strong>[ESTE ID]</strong>/edit. El archivo debe estar compartido como "Cualquiera con el enlace puede ver".</p>
           <div class="admin-input-row">
             <input type="text" id="adminDriveId" class="admin-input" placeholder="1BxiM...ZsGV" value="${currentId}">
             <button class="admin-btn-primary" id="adminTestDrive"><i class="fas fa-bolt me-1"></i>Cargar</button>
@@ -339,7 +339,7 @@ function _showAdminPanel(firstTime = false, errorMsg = '') {
 
     // Update the config variable in memory
     try {
-      const url = `https://drive.google.com/uc?export=download&id=${id}`;
+      const url = `https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx`;
       await DataStore.loadFromUrl(url);
       if (status) status.innerHTML = `<span class="admin-ok"><i class="fas fa-check me-1"></i>${DataStore.getParticipants().length} participantes, ${DataStore.getCuts().length} cortes cargados.</span>`;
       setTimeout(() => { modal.remove(); _initDashboard(); }, 800);
