@@ -606,7 +606,7 @@ function _renderRankingTable() {
   if (!tbody) return;
 
   if (!pageData.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty-table-msg"><i class="fas fa-search fa-2x d-block mb-2"></i>Sin resultados</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-table-msg"><i class="fas fa-search fa-2x d-block mb-2"></i>Sin resultados</td></tr>`;
     _renderPagination(totalPages);
     return;
   }
@@ -628,6 +628,7 @@ function _renderRankingTable() {
       </td>
       <td><strong>${Utils.formatNumber(r.puntaje)}</strong></td>
       <td>${exactHtml}</td>
+      <td>${Utils.varBadge(r.puntajeDelta)}</td>
       <td>${Utils.varBadge(r.delta)}</td>
       <td class="sparkline-cell"><canvas id="${sparkId}" width="80" height="28"></canvas></td>
     </tr>`;

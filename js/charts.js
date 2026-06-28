@@ -211,7 +211,7 @@ const ChartManager = (() => {
     opts.scales.x.title = { display: true, text: 'Puntaje', font: { family: FONT, size: 11 }, color: _textColor() };
     opts.plugins.tooltip.callbacks = { label: ctx => { const d = ctx.raw; return [` ${d.nombre}`, ` Ranking: #${d.y}`, ` Puntaje: ${Utils.formatNumber(d.x)}`, ` Exactos: ${d.exacto}`]; } };
     const datasets = [mkDataset(regularPts, 'Participantes', '#2979D9', 5)];
-    if (peruPts.length) datasets.push(mkDataset(peruPts, '🇵🇪 Perú', '#E74C3C', 7));
+    if (flagPts.length) datasets.push(mkDataset(flagPts, 'Con bandera', '#E74C3C', 7));
     _instances['scatterChart'] = new Chart(canvas, { type: 'scatter', data: { datasets }, options: opts });
   }
 

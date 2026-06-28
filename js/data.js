@@ -176,7 +176,7 @@ const DataStore = (() => {
     const exactByName = {};
     _participants.forEach(name => {
       const rows = _byname[name];
-      exactByName[name] = rows.length ? Math.max(...rows.map(r => r.exacto)) : 0;
+      exactByName[name] = rows.reduce((s, r) => s + r.exacto, 0);
     });
     const exactSorted = Object.entries(exactByName)
       .map(([nombre, exacto]) => ({ nombre, exacto, flag: _getFlag(nombre), isPeru: _getFlag(nombre) === '🇵🇪' }))
@@ -211,11 +211,13 @@ const DataStore = (() => {
   function _computeVariations(cutKey, prevCutKey) {
     const curr = _bycut[cutKey] || [];
     const prev = {};
-    if (prevCutKey) { (_bycut[prevCutKey] || []).forEach(r => { prev[r.nombre] = r.ranking; }); }
+    if (prevCutKey) { (_bycut[prevCutKey] || []).forEach(r => { prev[r.nombre] = { ranking: r.ranking, puntaje: r.puntaje }; }); }
     return curr.map(r => {
-      const prevRank = prev[r.nombre];
+      const prevData = prev[r.nombre];
+      const prevRank = prevData ? prevData.ranking : undefined;
       const delta = prevRank != null ? prevRank - r.ranking : null;
-      return { ...r, prevRank, delta };
+      const puntajeDelta = prevData != null ? r.puntaje - prevData.puntaje : null;
+      return { ...r, prevRank, delta, puntajeDelta };
     });
   }
 
@@ -283,7 +285,7 @@ const DataStore = (() => {
   }
 
   function getScatterData(cutIdx = null) {
-    return getCutData(cutIdx).map(r => ({ x: r.puntaje, y: r.ranking, nombre: r.nombre, isPeru: r.isPeru, exacto: r.exacto }));
+    return getCutData(cutIdx).map(r => ({ x: r.puntaje, y: r.ranking, nombre: r.nombre, flag: r.flag, isPeru: r.isPeru, exacto: r.exacto }));
   }
 
   function _updateProgress(pct, msg) {
