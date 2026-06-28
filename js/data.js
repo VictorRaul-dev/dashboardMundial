@@ -9,9 +9,10 @@
    Agrega tantos países como necesites con su emoji de bandera.
 ─────────────────────────────────────────────────────────── */
 const participantesPorPais = {
-  '🇵🇪': [" Percy Gomez"," Victor Raul Cercado Lopez"," Karina Otárola"," Katya santos"," Patricia Suclupe"," Camila Herrán"," Jean Pierre RIOS MERCEDES"," Adriana Contreras"," Andy Balcazar"],
+  '🇵🇪': [" Percy Gomez"," Victor Raul Cercado Lopez"," Karina Otárola"," Katya santos"," Patricia Suclupe",
+        " Camila Herrán"," Jean Pierre RIOS MERCEDES"," Adriana Contreras"," Andy Balcazar"," Fernando Bruno Mamani Cáceda"],
   '🇨🇴': [],  // Agrega aquí participantes de Colombia
-  '🇲🇽': [],  // Agrega aquí participantes de México
+  '🇲🇽': [" Erick Hernández"," Carlos Olvera"],  // Agrega aquí participantes de México
   // '🇦🇷': [],
 };
 
