@@ -1037,9 +1037,12 @@ function _navigateTo(section) {
   });
 
   // Lazy-render section-specific content
-  if (section === 'evolution') _renderEvoCharts();
-  if (section === 'race')      { ChartManager.initRaceChart(); }
-  if (section === 'heatmap')   _renderHeatmap();
+  if (section === 'evolution')   _renderEvoCharts();
+  if (section === 'race')        ChartManager.initRaceChart();
+  if (section === 'heatmap')     _renderHeatmap();
+  if (section === 'analysis')    _renderAnalysisSection();
+  if (section === 'exactscores') _renderExactScores();
+  if (section === 'trends')      _renderTrendsSection();
   if (section === 'comparator' && AppState.compPlayer1 && AppState.compPlayer2) _tryRenderComparator();
 
   // Close sidebar on mobile
@@ -1051,11 +1054,13 @@ function _navigateTo(section) {
 
 function _refreshCurrentSection() {
   const s = AppState.activeSection;
-  if (s === 'overview')   { _renderOverviewCharts(); _updateKPICards(); }
-  if (s === 'ranking')    _renderRankingTable();
-  if (s === 'evolution')  _renderEvoCharts();
-  if (s === 'analysis')   _renderAnalysisSection();
-  if (s === 'heatmap')    _renderHeatmap();
+  if (s === 'overview')    { _renderOverviewCharts(); _updateKPICards(); }
+  if (s === 'ranking')     _renderRankingTable();
+  if (s === 'evolution')   _renderEvoCharts();
+  if (s === 'analysis')    _renderAnalysisSection();
+  if (s === 'exactscores') _renderExactScores();
+  if (s === 'trends')      _renderTrendsSection();
+  if (s === 'heatmap')     _renderHeatmap();
 }
 
 /* ─── SIDEBAR ─────────────────────────────────────────── */
