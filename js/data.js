@@ -21,7 +21,7 @@ const participantesPeru = [" Percy Gomez"," Victor Raul Cercado Lopez"," Karina 
 
    El archivo debe estar compartido como "Cualquiera con el enlace".
 ───────────────────────────────────────────────────────── */
-const DRIVE_FILE_ID = 'https://docs.google.com/spreadsheets/d/1hr_Z6yBWGFdqNp-SWY7JirR2UG16ots5/edit?usp=sharing&ouid=110467925148696366295&rtpof=true&sd=true'; // ← Pega aquí el File ID de Google Drive
+const DRIVE_FILE_ID = '1hr_Z6yBWGFdqNp-SWY7JirR2UG16ots5'; // ← Pega aquí el File ID de Google Drive
 
 /* ─── CONFIGURACIÓN DE COLUMNAS ──────────────────────────────
    Mapeado de columnas del Excel. Ajusta si los encabezados
