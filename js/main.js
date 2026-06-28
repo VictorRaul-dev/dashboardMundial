@@ -273,11 +273,7 @@ function _setupEventListeners() {
     _renderStatsCards(idx);
   });
 
-  /* Export buttons */
-  document.getElementById('exportCSV')?.addEventListener('click', _exportCSV);
-  document.getElementById('exportExcel')?.addEventListener('click', _exportExcelBtn);
-  document.getElementById('exportPNG')?.addEventListener('click', () => Utils.exportPNG('#section-' + AppState.activeSection));
-  document.getElementById('exportPDF')?.addEventListener('click', () => Utils.exportPDF());
+  /* Export removed */
 }
 
 /* ─── ADMIN PANEL ─────────────────────────────────────── */
@@ -616,7 +612,7 @@ function _renderRankingTable() {
   }
 
   tbody.innerHTML = pageData.map(r => {
-    const rankClass = r.ranking === 1 ? 'row-top1' : r.ranking === 2 ? 'row-top2' : r.ranking === 3 ? 'row-top3' : r.isPeru ? 'row-peru' : '';
+    const rankClass = r.ranking === 1 ? 'row-top1' : r.ranking === 2 ? 'row-top2' : r.ranking === 3 ? 'row-top3' : r.flag === '🇵🇪' ? 'row-peru' : r.flag ? 'row-flag' : '';
     const badgeClass = r.ranking === 1 ? 'gold' : r.ranking === 2 ? 'silver' : r.ranking === 3 ? 'bronze' : '';
     const exactHtml = r.exacto > 0 ? `<span class="exact-badge"><i class="fas fa-bullseye me-1"></i>${r.exacto}</span>` : '<span class="text-muted">—</span>';
 
@@ -627,7 +623,7 @@ function _renderRankingTable() {
       <td><span class="rank-badge ${badgeClass}">${r.ranking}</span></td>
       <td>
         <span class="participant-name">
-          ${r.isPeru ? '<span class="peru-flag">🇵🇪</span>' : ''}${_escHtml(r.nombre)}
+          ${(r.flag ? `<span class="country-flag">${r.flag}</span>` : '')}${_escHtml(r.nombre)}
         </span>
       </td>
       <td><strong>${Utils.formatNumber(r.puntaje)}</strong></td>
@@ -648,6 +644,7 @@ function _renderRankingTable() {
 
   _renderPagination(totalPages);
   _updatePagButtons(totalPages);
+  ChartManager.renderRankingBarChart(AppState.currentCutIdx, 25);
 }
 
 function _renderPagination(totalPages) {
@@ -702,7 +699,7 @@ function _handleEvoSearch() {
     const row = cutData.find(r => r.nombre === name);
     const rank = row ? `#${row.ranking}` : '';
     return `<div class="evo-result-item" data-name="${_escAttr(name)}">
-      ${name.includes ? (DataStore.isPeru(name) ? '🇵🇪 ' : '') : ''}${_escHtml(name)}
+      ${name.includes ? ((DataStore.getFlag(name) ? DataStore.getFlag(name) + ' ' : '')) : ''}${_escHtml(name)}
       <span class="ms-auto text-muted small">${rank}</span>
     </div>`;
   }).join('');
@@ -747,7 +744,7 @@ function _renderEvoTags() {
   wrap.innerHTML = AppState.evoSelectedNames.map((name, i) => {
     const color = Utils.paletteColor(i);
     return `<span class="evo-tag" style="background:${color}">
-      ${DataStore.isPeru(name) ? '🇵🇪 ' : ''}${_escHtml(Utils.truncate(name, 20))}
+      ${(DataStore.getFlag(name) ? DataStore.getFlag(name) + ' ' : '')}${_escHtml(Utils.truncate(name, 20))}
       <button class="evo-tag-remove" data-name="${_escAttr(name)}"><i class="fas fa-xmark"></i></button>
     </span>`;
   }).join('');
@@ -778,7 +775,7 @@ function _setupComparatorSearch(inputId, dropdownId, player) {
 
     dropdown.innerHTML = results.map(name =>
       `<div class="comp-dropdown-item" data-name="${_escAttr(name)}">
-        ${DataStore.isPeru(name) ? '🇵🇪 ' : ''}${_escHtml(name)}
+        ${(DataStore.getFlag(name) ? DataStore.getFlag(name) + ' ' : '')}${_escHtml(name)}
       </div>`
     ).join('');
 
@@ -803,11 +800,11 @@ function _setupComparatorSearch(inputId, dropdownId, player) {
 function _selectCompPlayer(player, name) {
   if (player === 1) {
     AppState.compPlayer1 = name;
-    _setEl('comp1Name', (DataStore.isPeru(name) ? '🇵🇪 ' : '') + name);
+    _setEl('comp1Name', ((DataStore.getFlag(name) ? DataStore.getFlag(name) + ' ' : '')) + name);
     document.getElementById('comp1Card')?.classList.remove('d-none');
   } else {
     AppState.compPlayer2 = name;
-    _setEl('comp2Name', (DataStore.isPeru(name) ? '🇵🇪 ' : '') + name);
+    _setEl('comp2Name', ((DataStore.getFlag(name) ? DataStore.getFlag(name) + ' ' : '')) + name);
     document.getElementById('comp2Card')?.classList.remove('d-none');
   }
   _tryRenderComparator();
@@ -839,8 +836,8 @@ function _tryRenderComparator() {
   const s2 = DataStore.getParticipantStats(AppState.compPlayer2);
   if (!s1 || !s2) return;
 
-  _setEl('compH1', (DataStore.isPeru(s1.nombre) ? '🇵🇪 ' : '') + s1.nombre);
-  _setEl('compH2', (DataStore.isPeru(s2.nombre) ? '🇵🇪 ' : '') + s2.nombre);
+  _setEl('compH1', ((DataStore.getFlag(s1.nombre) ? DataStore.getFlag(s1.nombre) + ' ' : '')) + s1.nombre);
+  _setEl('compH2', ((DataStore.getFlag(s2.nombre) ? DataStore.getFlag(s2.nombre) + ' ' : '')) + s2.nombre);
 
   const rows = [
     { label: 'Ranking actual',     v1: `#${s1.currentRank}`,        v2: `#${s2.currentRank}`,        better: s1.currentRank < s2.currentRank ? 1 : 2 },
@@ -869,6 +866,7 @@ function _tryRenderComparator() {
 
   ChartManager.renderCompRankChart(s1.nombre, s2.nombre);
   ChartManager.renderCompRadarChart(s1, s2);
+  ChartManager.renderCompScoreEvoChart(s1.nombre, s2.nombre);
   _renderCompConclusion(s1, s2);
 }
 
@@ -887,7 +885,7 @@ function _renderCompConclusion(s1, s2) {
 
   const winner = score1 > score2 ? s1 : s2;
   const pct = Math.round((Math.max(score1, score2) / 7) * 100);
-  const wName = `<strong>${(DataStore.isPeru(winner.nombre) ? '🇵🇪 ' : '') + winner.nombre}</strong>`;
+  const wName = `<strong>${((DataStore.getFlag(winner.nombre) ? DataStore.getFlag(winner.nombre) + ' ' : '')) + winner.nombre}</strong>`;
   const lName = winner === s1 ? s2.nombre : s1.nombre;
 
   el.innerHTML = `
@@ -954,7 +952,7 @@ function _renderExactScores() {
     const current = lastData.find(r => r.nombre === x.nombre);
     return `<tr>
       <td><span class="rank-badge">${i + 1}</span></td>
-      <td>${x.isPeru ? '<span class="peru-flag">🇵🇪</span>' : ''}${_escHtml(x.nombre)}</td>
+      <td>${(x.flag ? `<span class="country-flag">${x.flag}</span>` : '')}${_escHtml(x.nombre)}</td>
       <td><span class="exact-badge"><i class="fas fa-bullseye me-1"></i>${x.exacto}</span></td>
       <td>${current ? `#${current.ranking}` : '—'}</td>
       <td>${current ? Utils.formatNumber(current.puntaje) + ' pts' : '—'}</td>
@@ -1010,7 +1008,7 @@ function _renderLeaderboard(elId, data, formatVal, lowerBetter = false) {
     const barPct = maxVal > 0 ? (Number(item.count) / maxVal) * 100 : 0;
     return `<div class="lb-item">
       <span class="lb-pos ${posClass}">${i + 1}</span>
-      <span class="lb-name">${item.isPeru ? '🇵🇪 ' : ''}${_escHtml(Utils.truncate(item.nombre, 22))}</span>
+      <span class="lb-name">${(item.flag ? item.flag + ' ' : '')}${_escHtml(Utils.truncate(item.nombre, 22))}</span>
       <div class="lb-bar-wrap"><div class="lb-bar" style="width:${barPct}%"></div></div>
       <span class="lb-value">${formatVal(item.count)}</span>
     </div>`;
@@ -1127,7 +1125,7 @@ function _handleGlobalSearch() {
   suggestions.innerHTML = results.map(name => {
     const row = lastData.find(r => r.nombre === name);
     return `<div class="gs-suggestion" data-name="${_escAttr(name)}">
-      <span>${DataStore.isPeru(name) ? '🇵🇪 ' : ''}${_escHtml(name)}</span>
+      <span>${(DataStore.getFlag(name) ? DataStore.getFlag(name) + ' ' : '')}${_escHtml(name)}</span>
       ${row ? `<span class="gs-rank-badge ms-auto">#${row.ranking}</span>` : ''}
     </div>`;
   }).join('');
@@ -1233,7 +1231,7 @@ function _setEl(id, value) {
 
 function _nameWithFlag(nombre) {
   if (!nombre) return '—';
-  return (DataStore.isPeru(nombre) ? '🇵🇪 ' : '') + _escHtml(nombre);
+  return ((DataStore.getFlag(nombre) ? DataStore.getFlag(nombre) + ' ' : '')) + _escHtml(nombre);
 }
 
 function _escHtml(str) {

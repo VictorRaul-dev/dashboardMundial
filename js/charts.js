@@ -69,7 +69,7 @@ const ChartManager = (() => {
     const datasets = top10Names.slice(0, 8).map((name, i) => {
       const history = DataStore.getHistory(name);
       const data = cuts.map(c => { const row = history.find(r => r.cutKey === c); return row ? (view === 'ranking' ? row.ranking : row.puntaje) : null; });
-      return { label: (DataStore.isPeru(name) ? '🇵🇪 ' : '') + Utils.truncate(name, 18), data, borderColor: Utils.paletteColor(i), backgroundColor: Utils.paletteColor(i, .08), borderWidth: 2, pointRadius: data.length > 20 ? 0 : 3, pointHoverRadius: 5, tension: 0.3, fill: false, spanGaps: true };
+      return { label: ((DataStore.getFlag(name) ? DataStore.getFlag(name) + ' ' : '')) + Utils.truncate(name, 18), data, borderColor: Utils.paletteColor(i), backgroundColor: Utils.paletteColor(i, .08), borderWidth: 2, pointRadius: data.length > 20 ? 0 : 3, pointHoverRadius: 5, tension: 0.3, fill: false, spanGaps: true };
     });
     const opts = _baseOpts();
     if (view === 'ranking') { opts.scales.y.reverse = true; opts.scales.y.title = { display: true, text: 'Posición', font: { family: FONT, size: 11 }, color: _textColor() }; }
@@ -85,7 +85,7 @@ const ChartManager = (() => {
     if (!canvas || !DataStore.isLoaded()) return;
     _destroy('quickDonut');
     const top5 = DataStore.getTopN(5);
-    const labels = top5.map(r => (DataStore.isPeru(r.nombre) ? '🇵🇪 ' : '') + Utils.truncate(r.nombre, 16));
+    const labels = top5.map(r => ((DataStore.getFlag(r.nombre) ? DataStore.getFlag(r.nombre) + ' ' : '')) + Utils.truncate(r.nombre, 16));
     const data = top5.map(r => r.puntaje);
     const colors = top5.map((_, i) => Utils.paletteColor(i));
     _instances['quickDonut'] = new Chart(canvas, {
@@ -105,7 +105,7 @@ const ChartManager = (() => {
     const rises = variations.filter(v => v.delta > 0).sort((a,b) => b.delta - a.delta).slice(0, 10);
     const falls = variations.filter(v => v.delta < 0).sort((a,b) => a.delta - b.delta).slice(0, 10);
     const combined = [...rises, ...falls].sort((a,b) => (b.delta || 0) - (a.delta || 0));
-    const labels = combined.map(r => (DataStore.isPeru(r.nombre) ? '🇵🇪 ' : '') + Utils.truncate(r.nombre, 18));
+    const labels = combined.map(r => ((DataStore.getFlag(r.nombre) ? DataStore.getFlag(r.nombre) + ' ' : '')) + Utils.truncate(r.nombre, 18));
     const data   = combined.map(r => r.delta || 0);
     const colors = data.map(v => v > 0 ? Utils.hexToRgba('#16A34A', .8) : Utils.hexToRgba('#DC2626', .8));
     const borderColors = data.map(v => v > 0 ? '#16A34A' : '#DC2626');
@@ -126,7 +126,7 @@ const ChartManager = (() => {
     const datasets = selectedNames.map((name, i) => {
       const history = DataStore.getHistory(name);
       const data = cuts.map(c => { const row = history.find(r => r.cutKey === c); return row ? row.ranking : null; });
-      return { label: (DataStore.isPeru(name) ? '🇵🇪 ' : '') + name, data, spanGaps: true, borderColor: Utils.paletteColor(i), backgroundColor: Utils.paletteColor(i, .1), borderWidth: 2.5, pointRadius: data.length > 30 ? 0 : 4, pointHoverRadius: 6, tension: 0.3, fill: false };
+      return { label: ((DataStore.getFlag(name) ? DataStore.getFlag(name) + ' ' : '')) + name, data, spanGaps: true, borderColor: Utils.paletteColor(i), backgroundColor: Utils.paletteColor(i, .1), borderWidth: 2.5, pointRadius: data.length > 30 ? 0 : 4, pointHoverRadius: 6, tension: 0.3, fill: false };
     });
     const opts = _baseOpts();
     opts.scales.y.reverse = true; opts.scales.y.min = 1;
@@ -146,7 +146,7 @@ const ChartManager = (() => {
     const datasets = selectedNames.map((name, i) => {
       const history = DataStore.getHistory(name);
       const data = cuts.map(c => { const row = history.find(r => r.cutKey === c); return row ? row.puntaje : null; });
-      return { label: (DataStore.isPeru(name) ? '🇵🇪 ' : '') + name, data, spanGaps: true, borderColor: Utils.paletteColor(i), backgroundColor: Utils.paletteColor(i, .1), borderWidth: 2.5, pointRadius: data.length > 30 ? 0 : 4, pointHoverRadius: 6, tension: 0.3, fill: false };
+      return { label: ((DataStore.getFlag(name) ? DataStore.getFlag(name) + ' ' : '')) + name, data, spanGaps: true, borderColor: Utils.paletteColor(i), backgroundColor: Utils.paletteColor(i, .1), borderWidth: 2.5, pointRadius: data.length > 30 ? 0 : 4, pointHoverRadius: 6, tension: 0.3, fill: false };
     });
     const opts = _baseOpts();
     opts.scales.y.title = { display: true, text: 'Puntaje', font: { family: FONT, size: 11 }, color: _textColor() };
@@ -164,7 +164,7 @@ const ChartManager = (() => {
     const labels = cuts.map(c => DataStore.getCutLabel(c));
     const mkDataset = (name, color) => {
       const h = DataStore.getHistory(name);
-      return { label: (DataStore.isPeru(name) ? '🇵🇪 ' : '') + name, data: cuts.map(c => { const r = h.find(x => x.cutKey === c); return r ? r.ranking : null; }), borderColor: color, backgroundColor: Utils.hexToRgba(color, .1), borderWidth: 2.5, tension: 0.3, fill: false, spanGaps: true, pointRadius: 4, pointHoverRadius: 6 };
+      return { label: ((DataStore.getFlag(name) ? DataStore.getFlag(name) + ' ' : '')) + name, data: cuts.map(c => { const r = h.find(x => x.cutKey === c); return r ? r.ranking : null; }), borderColor: color, backgroundColor: Utils.hexToRgba(color, .1), borderWidth: 2.5, tension: 0.3, fill: false, spanGaps: true, pointRadius: 4, pointHoverRadius: 6 };
     };
     const opts = _baseOpts();
     opts.scales.y.reverse = true; opts.scales.y.min = 1;
@@ -202,8 +202,8 @@ const ChartManager = (() => {
     if (!canvas || !DataStore.isLoaded()) return;
     _destroy('scatterChart');
     const points = DataStore.getScatterData(cutIdx);
-    const peruPts = points.filter(p => p.isPeru);
-    const regularPts = points.filter(p => !p.isPeru);
+    const flagPts = points.filter(p => p.flag);
+    const regularPts = points.filter(p => !p.flag);
     const mkDataset = (data, label, color, radius = 5) => ({ label, data: data.map(p => ({ x: p.x, y: p.y, nombre: p.nombre, exacto: p.exacto })), backgroundColor: Utils.hexToRgba(color, .6), borderColor: color, borderWidth: 1, pointRadius: radius, pointHoverRadius: radius + 3 });
     const opts = _baseOpts();
     opts.scales.y.reverse = true;
@@ -237,7 +237,7 @@ const ChartManager = (() => {
     const m = DataStore.getMetrics();
     if (!m) return;
     const top20 = m.exactSorted.slice(0, 20);
-    const labels = top20.map(x => (x.isPeru ? '🇵🇪 ' : '') + Utils.truncate(x.nombre, 18));
+    const labels = top20.map(x => ((x.flag ? x.flag + ' ' : '')) + Utils.truncate(x.nombre, 18));
     const data   = top20.map(x => x.exacto);
     const colors = top20.map(x => x.isPeru ? Utils.hexToRgba('#E74C3C', .8) : Utils.hexToRgba('#D4AF37', .8));
     const opts = _baseOpts();
@@ -279,7 +279,7 @@ const ChartManager = (() => {
     _raceState.colorMap = colorMap;
     const config = {
       type: 'bar',
-      data: { labels: firstData.map(r => (DataStore.isPeru(r.nombre) ? '🇵🇪 ' : '') + Utils.truncate(r.nombre, 22)), datasets: [{ data: firstData.map(r => r.puntaje), backgroundColor: firstData.map(r => Utils.hexToRgba(colorMap[r.nombre] || Utils.paletteColor(0), .8)), borderColor: firstData.map(r => colorMap[r.nombre] || Utils.paletteColor(0)), borderWidth: 2, borderRadius: 6 }] },
+      data: { labels: firstData.map(r => ((DataStore.getFlag(r.nombre) ? DataStore.getFlag(r.nombre) + ' ' : '')) + Utils.truncate(r.nombre, 22)), datasets: [{ data: firstData.map(r => r.puntaje), backgroundColor: firstData.map(r => Utils.hexToRgba(colorMap[r.nombre] || Utils.paletteColor(0), .8)), borderColor: firstData.map(r => colorMap[r.nombre] || Utils.paletteColor(0)), borderWidth: 2, borderRadius: 6 }] },
       options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, animation: { duration: Math.min(_raceState.speed * .7, 800), easing: 'easeInOutQuart' }, plugins: { legend: { display: false }, tooltip: { backgroundColor: _isDark() ? '#0F192A' : '#fff', titleColor: _labelColor(), bodyColor: _textColor(), borderColor: _isDark() ? '#1E2D42' : '#DDE3EC', borderWidth: 1, callbacks: { label: ctx => ` Puntaje: ${Utils.formatNumber(ctx.parsed.x)}` } } }, scales: { x: { beginAtZero: true, ticks: { font: { family: FONT, size: 11 }, color: _textColor() }, grid: { color: _gridColor() } }, y: { ticks: { font: { family: FONT, size: 12, weight: '500' }, color: _labelColor() }, grid: { display: false } } } }
     };
     _raceState.chartInstance = new Chart(canvas, config);
@@ -297,7 +297,7 @@ const ChartManager = (() => {
     const top20 = (bycut[cut] || []).slice(0, 20).sort((a, b) => b.puntaje - a.puntaje);
     const chart = _raceState.chartInstance;
     const cm = _raceState.colorMap || {};
-    chart.data.labels = top20.map(r => (DataStore.isPeru(r.nombre) ? '🇵🇪 ' : '') + Utils.truncate(r.nombre, 22));
+    chart.data.labels = top20.map(r => ((DataStore.getFlag(r.nombre) ? DataStore.getFlag(r.nombre) + ' ' : '')) + Utils.truncate(r.nombre, 22));
     chart.data.datasets[0].data = top20.map(r => r.puntaje);
     chart.data.datasets[0].backgroundColor = top20.map(r => Utils.hexToRgba(cm[r.nombre] || Utils.paletteColor(0), .8));
     chart.data.datasets[0].borderColor = top20.map(r => cm[r.nombre] || Utils.paletteColor(0));
@@ -373,7 +373,7 @@ const ChartManager = (() => {
       ctx.fillRect(0, y, W, cellH);
       ctx.fillStyle = dark ? '#E8EDF5' : '#0B1F3A';
       ctx.font = font; ctx.textAlign = 'left';
-      ctx.fillText((DataStore.isPeru(name) ? '🇵🇪 ' : '') + Utils.truncate(name, 22), pad, y + cellH / 2 + 4);
+      ctx.fillText(((DataStore.getFlag(name) ? DataStore.getFlag(name) + ' ' : '')) + Utils.truncate(name, 22), pad, y + cellH / 2 + 4);
       matrix[i].forEach((rank, j) => {
         if (rank === null) return;
         const x = labelW + j * cellW + 2 + pad;
@@ -417,11 +417,57 @@ const ChartManager = (() => {
     renderHeatmap(parseInt(document.getElementById('heatmapTopN')?.value || '20'), document.getElementById('heatmapPeruOnly')?.checked || false);
   }
 
+  function renderRankingBarChart(cutIdx = null, topN = 20) {
+    const canvas = document.getElementById('rankingBarChart');
+    if (!canvas || !DataStore.isLoaded()) return;
+    _destroy('rankingBarChart');
+    const data = DataStore.getCutData(cutIdx).slice(0, topN);
+    if (!data.length) return;
+    const labels = data.map(r => (r.flag ? r.flag + ' ' : '') + Utils.truncate(r.nombre, 20));
+    const scores = data.map(r => r.puntaje);
+    const colors = data.map(r => r.flag ? Utils.hexToRgba('#D4AF37', .85) : Utils.hexToRgba('#2979D9', .75));
+    const opts = _baseOpts();
+    opts.indexAxis = 'y';
+    opts.scales.x.title = { display: true, text: 'Puntaje', font: { family: FONT, size: 11 }, color: _textColor() };
+    opts.plugins.legend = { display: false };
+    opts.plugins.tooltip.callbacks = { label: ctx => ` ${Utils.formatNumber(ctx.parsed.x)} pts` };
+    _instances['rankingBarChart'] = new Chart(canvas, {
+      type: 'bar',
+      data: { labels, datasets: [{ data: scores, backgroundColor: colors, borderColor: colors.map(c => c.replace(', .75)', ', 1)').replace(', .85)', ', 1)')), borderWidth: 1, borderRadius: 4 }] },
+      options: opts,
+    });
+  }
+
+  function renderCompScoreEvoChart(name1, name2) {
+    const canvas = document.getElementById('compScoreEvoChart');
+    if (!canvas || !DataStore.isLoaded() || !name1 || !name2) { _destroy('compScoreEvoChart'); return; }
+    _destroy('compScoreEvoChart');
+    const cuts = DataStore.getCuts();
+    const labels = cuts.map(c => DataStore.getCutLabel(c));
+    const mkDataset = (name, color) => {
+      const history = DataStore.getHistory(name);
+      const flag = DataStore.getFlag(name);
+      const data = cuts.map(c => { const r = history.find(x => x.cutKey === c); return r ? r.puntaje : null; });
+      return { label: (flag ? flag + ' ' : '') + Utils.truncate(name, 22), data, spanGaps: true, borderColor: color, backgroundColor: Utils.hexToRgba(color, .12), borderWidth: 2.5, pointRadius: cuts.length > 30 ? 0 : 4, pointHoverRadius: 6, tension: 0.3, fill: true };
+    };
+    const opts = _baseOpts();
+    opts.scales.y.title = { display: true, text: 'Puntaje', font: { family: FONT, size: 11 }, color: _textColor() };
+    opts.scales.x.ticks = { ...opts.scales.x.ticks, maxRotation: 35, maxTicksLimit: 12 };
+    opts.plugins.tooltip.callbacks = { label: ctx => ` ${ctx.dataset.label}: ${Utils.formatNumber(ctx.parsed.y)} pts` };
+    opts.plugins.zoom = { zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }, pan: { enabled: true, mode: 'x' } };
+    _instances['compScoreEvoChart'] = new Chart(canvas, {
+      type: 'line',
+      data: { labels, datasets: [mkDataset(name1, '#2979D9'), mkDataset(name2, '#E74C3C')] },
+      options: opts,
+    });
+  }
+
   function destroyAll() { Object.keys(_instances).forEach(k => { if (_instances[k]) { _instances[k].destroy(); delete _instances[k]; } }); }
 
   return {
     renderSparkline, renderQuickChart, renderQuickDonut, renderVariationChart,
     renderRankingEvoChart, renderScoreEvoChart, renderCompRankChart, renderCompRadarChart,
+    renderRankingBarChart, renderCompScoreEvoChart,
     renderScatterChart, renderDistChart, renderExactBarChart, renderExactPieChart,
     initRaceChart, playRace, pauseRace, resetRace, stopRace, setRaceSpeed,
     renderHeatmap, updateTheme, destroyAll,

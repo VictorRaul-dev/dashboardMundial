@@ -4,14 +4,16 @@
 
 'use strict';
 
-/* ─── CONFIGURACIÓN GLOBAL ─────────────────────────────────────
-   Modifica estos arrays con los nombres de los participantes
-   peruanos para que aparezca la bandera 🇵🇪 automáticamente.
-───────────────────────────────────────────────────────── */
-const participantesPeru = [" Percy Gomez"," Victor Raul Cercado Lopez"," Karina Otárola"," Katya santos"," Patricia Suclupe"," Camila Herrán"," Jean Pierre RIOS MERCEDES"," Adriana Contreras"," Andy Balcazar"
-  // Ejemplo: "Juan Pérez", "María García"
-  // Agrega aquí los nombres exactamente como aparecen en el Excel
-];
+/* ── BANDERAS POR PAÍS ─────────────────────────────────────────
+   Añade los nombres exactamente como aparecen en el Excel.
+   Agrega tantos países como necesites con su emoji de bandera.
+─────────────────────────────────────────────────────────── */
+const participantesPorPais = {
+  '🇵🇪': [" Percy Gomez"," Victor Raul Cercado Lopez"," Karina Otárola"," Katya santos"," Patricia Suclupe"," Camila Herrán"," Jean Pierre RIOS MERCEDES"," Adriana Contreras"," Andy Balcazar"],
+  '🇨🇴': [],  // Agrega aquí participantes de Colombia
+  '🇲🇽': [],  // Agrega aquí participantes de México
+  // '🇦🇷': [],
+};
 
 /* ─── CONFIGURACIÓN GOOGLE DRIVE ────────────────────────────
    Pega aquí el ID del archivo Excel en Google Drive.
@@ -106,7 +108,7 @@ const DataStore = (() => {
       const puntaje = parseFloat(String(headers.puntaje ? row[headers.puntaje] : 0).replace(',', '.')) || 0;
       const exacto  = parseInt(headers.exacto  ? row[headers.exacto]  : 0, 10) || 0;
       const cutKey = fecha ? _toCutKey(fecha) : 'sin-fecha';
-      return { fecha, cutKey, ranking, nombre, puntaje, exacto, isPeru: _isPeru(nombre) };
+      return { fecha, cutKey, ranking, nombre, puntaje, exacto, flag: _getFlag(nombre), isPeru: _getFlag(nombre) === '🇵🇪' };
     }).filter(r => r.nombre && r.ranking > 0);
   }
 
@@ -120,10 +122,15 @@ const DataStore = (() => {
     return `${y}-${m}-${dd}T${h}:${mi}`;
   }
 
-  function _isPeru(nombre) {
-    if (!nombre) return false;
-    return participantesPeru.some(p => p.trim().toLowerCase() === nombre.toLowerCase());
+  function _getFlag(nombre) {
+    if (!nombre) return '';
+    const n = nombre.trim().toLowerCase();
+    for (const [flag, names] of Object.entries(participantesPorPais)) {
+      if (names.some(p => p.trim().toLowerCase() === n)) return flag;
+    }
+    return '';
   }
+  function _isPeru(nombre) { return _getFlag(nombre) === '🇵🇪'; }
 
   function _buildIndexes() {
     _bycut = {}; _byname = {};
@@ -158,7 +165,7 @@ const DataStore = (() => {
     const falls  = variations.filter(v => v.delta < 0).sort((a,b) => a.delta - b.delta);
     const consistency = _participants.map(name => {
       const ranks = _byname[name].map(r => r.ranking);
-      return { nombre: name, sd: Utils.stddev(ranks), isPeru: _isPeru(name) };
+      return { nombre: name, sd: Utils.stddev(ranks), flag: _getFlag(name), isPeru: _getFlag(name) === '🇵🇪' };
     }).filter(x => x.sd > 0).sort((a,b) => a.sd - b.sd);
     const scores = lastData.map(r => r.puntaje);
     const stats = {
@@ -172,7 +179,7 @@ const DataStore = (() => {
       exactByName[name] = rows.length ? Math.max(...rows.map(r => r.exacto)) : 0;
     });
     const exactSorted = Object.entries(exactByName)
-      .map(([nombre, exacto]) => ({ nombre, exacto, isPeru: _isPeru(nombre) }))
+      .map(([nombre, exacto]) => ({ nombre, exacto, flag: _getFlag(nombre), isPeru: _getFlag(nombre) === '🇵🇪' }))
       .filter(x => x.exacto > 0).sort((a,b) => b.exacto - a.exacto);
     const totalExact = exactSorted.reduce((s, x) => s + x.exacto, 0);
     const timesLeader = {}, timesTop10 = {}, timesTop50 = {}, timesTop100 = {};
@@ -186,12 +193,12 @@ const DataStore = (() => {
       });
     });
     const sortDict = d => Object.entries(d)
-      .map(([nombre, count]) => ({ nombre, count, isPeru: _isPeru(nombre) }))
+      .map(([nombre, count]) => ({ nombre, count, flag: _getFlag(nombre), isPeru: _getFlag(nombre) === '🇵🇪' }))
       .sort((a,b) => b.count - a.count);
     const growth = _participants.map(name => {
       const h = _byname[name];
       if (h.length < 2) return null;
-      return { nombre: name, growth: h[0].ranking - h[h.length-1].ranking, isPeru: _isPeru(name) };
+      return { nombre: name, growth: h[0].ranking - h[h.length-1].ranking, flag: _getFlag(name), isPeru: _getFlag(name) === '🇵🇪' };
     }).filter(Boolean).sort((a,b) => b.growth - a.growth);
     return {
       lastCut, prevCut, top3, variations, rises, falls,
@@ -329,6 +336,7 @@ const DataStore = (() => {
     getBycut() { return _bycut; },
     getByname() { return _byname; },
     isPeru: _isPeru,
+    getFlag: _getFlag,
     getCutLabel(cutKey) {
       if (!cutKey) return '—';
       const d = new Date(cutKey);

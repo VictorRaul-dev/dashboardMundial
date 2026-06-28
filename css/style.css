@@ -96,7 +96,9 @@ body {
 .loading-overlay.fade-out { opacity: 0; pointer-events: none; }
 
 .loading-content { text-align: center; color: white; }
-.loading-logo-img { width: 80px; height: 80px; margin-bottom: 16px; animation: pulse 2s infinite; }
+.loading-logo-img { width: min(70vw, 70vh); height: min(70vw, 70vh); margin-bottom: 24px; animation: pulse 2s infinite; object-fit: contain; }
+.loading-credit { margin-top: 16px; font-size: 13px; color: rgba(255,255,255,.55); letter-spacing: .3px; }
+.loading-credit strong { color: var(--c-gold); }
 .loading-spinner { width: 48px; height: 48px; margin: 0 auto 16px; }
 .spinner-ring {
   width: 48px; height: 48px; border-radius: 50%;
@@ -818,6 +820,8 @@ th.sort-desc .sort-icon { transform: rotate(180deg); }
 .fw-700 { font-weight: 700 !important; }
 .gap-2 { gap: 8px !important; }
 .no-data-msg { text-align:center; color:var(--text-muted); padding:40px; font-size:13px; }
+.country-flag { font-size: 15px; margin-right: 4px; }
+.row-flag { background: rgba(41,121,217,.04) !important; }
 
 /* ─── ADMIN PANEL ────────────────────────────────────── */
 .admin-backdrop {
