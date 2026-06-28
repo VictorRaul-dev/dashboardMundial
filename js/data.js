@@ -13,6 +13,16 @@ const participantesPeru = [" Percy Gomez"," Victor Raul Cercado Lopez"," Karina 
   // Agrega aquí los nombres exactamente como aparecen en el Excel
 ];
 
+/* ─── CONFIGURACIÓN GOOGLE DRIVE ────────────────────────────
+   Pega aquí el ID del archivo Excel en Google Drive.
+   Para obtenerlo: abre el archivo en Drive → "Compartir" →
+   "Cualquier persona con el enlace puede ver" → copia el ID
+   de la URL: drive.google.com/file/d/[ESTE_ES_EL_ID]/view
+
+   El archivo debe estar compartido como "Cualquiera con el enlace".
+───────────────────────────────────────────────────────── */
+const DRIVE_FILE_ID = ''; // ← Pega aquí el File ID de Google Drive
+
 /* ─── CONFIGURACIÓN DE COLUMNAS ──────────────────────────────
    Mapeado de columnas del Excel. Ajusta si los encabezados
    del archivo tienen nombres ligeramente distintos.
@@ -270,14 +280,44 @@ const DataStore = (() => {
   }
 
   function _updateProgress(pct, msg) {
-    const bar = document.getElementById('uploadBar');
-    const status = document.getElementById('uploadStatus');
+    const bar    = document.getElementById('loadingBar') || document.getElementById('uploadBar');
+    const status = document.getElementById('loadingMessage') || document.getElementById('uploadStatus');
     if (bar) bar.style.width = pct + '%';
     if (status) status.textContent = msg;
   }
 
+  function getDriveFileId() { return DRIVE_FILE_ID; }
+
+  function loadFromUrl(url) {
+    return new Promise((resolve, reject) => {
+      _updateProgress(10, 'Conectando con Google Drive…');
+      fetch(url)
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          _updateProgress(40, 'Descargando archivo…');
+          return res.arrayBuffer();
+        })
+        .then(buffer => {
+          _updateProgress(60, 'Parseando hoja…');
+          const data = new Uint8Array(buffer);
+          const wb = XLSX.read(data, { type: 'array', cellDates: true });
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const rawRows = XLSX.utils.sheet_to_json(ws, { defval: null, raw: true });
+          _updateProgress(75, `Procesando ${rawRows.length} filas…`);
+          _parseRows(rawRows);
+          _updateProgress(88, 'Calculando métricas…');
+          _buildIndexes();
+          _computeMetrics();
+          _updateProgress(100, 'Listo');
+          resolve({ cuts: _cuts, participants: _participants, rowCount: _raw.length });
+        })
+        .catch(reject);
+    });
+  }
+
   return {
-    loadFile, getCutData, getHistory, getMultiHistory,
+    loadFile, loadFromUrl, getDriveFileId,
+    getCutData, getHistory, getMultiHistory,
     getParticipantStats, searchParticipants, getTopN,
     getVariations, getHeatmapData, getScatterData,
     getMetrics() { return _metrics; },

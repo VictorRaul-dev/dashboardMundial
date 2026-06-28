@@ -30,32 +30,7 @@
   <!-- ═══════════════════════════════════════════════
        FILE UPLOAD OVERLAY
   ═══════════════════════════════════════════════ -->
-  <div id="uploadOverlay" class="upload-overlay d-none">
-    <div class="upload-card">
-      <div class="upload-header">
-        <img src="assets/logo.png" alt="PiPGol" class="upload-logo">
-        <h2 class="upload-title">PiP Perú</h2>
-        <p class="upload-subtitle">Dashboard Mundial 2026</p>
-      </div>
-      <div class="upload-dropzone" id="dropzone">
-        <div class="dropzone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-        <h4>Arrastra el archivo Excel aquí</h4>
-        <p class="text-muted">o haz clic para seleccionar</p>
-        <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
-        <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
-          <i class="fas fa-folder-open me-2"></i>Seleccionar archivo
-        </button>
-        <div class="upload-formats mt-3">
-          <span class="format-badge"><i class="fas fa-file-excel me-1"></i>.xlsx</span>
-          <span class="format-badge"><i class="fas fa-file-excel me-1"></i>.xls</span>
-        </div>
-      </div>
-      <div id="uploadProgress" class="upload-progress d-none">
-        <div class="progress mt-3"><div id="uploadBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div></div>
-        <p id="uploadStatus" class="mt-2 text-muted small text-center"></p>
-      </div>
-    </div>
-  </div>
+  <!-- Upload overlay removed: data loads from Google Drive automatically -->
 
   <!-- ═══════════════════════════════════════════════
        SIDEBAR
@@ -109,9 +84,7 @@
       <button id="darkModeToggle" class="sidebar-footer-btn">
         <i class="fas fa-moon" id="darkModeIcon"></i><span id="darkModeLabel">Modo oscuro</span>
       </button>
-      <button id="uploadNewFile" class="sidebar-footer-btn">
-        <i class="fas fa-upload"></i><span>Cargar archivo</span>
-      </button>
+      <!-- Admin: Ctrl+Shift+A -->
     </div>
   </nav>
 

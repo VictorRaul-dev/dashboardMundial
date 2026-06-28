@@ -34,30 +34,45 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function _initLoadingSequence() {
-  const overlay   = document.getElementById('loadingOverlay');
-  const uploadOv  = document.getElementById('uploadOverlay');
-  const loadBar   = document.getElementById('loadingBar');
+  const overlay = document.getElementById('loadingOverlay');
+  const loadBar = document.getElementById('loadingBar');
+  const loadMsg = document.getElementById('loadingMessage');
 
-  // Simulate loading phases
-  let pct = 0;
-  const msgs = ['Cargando Bootstrap…','Cargando Chart.js…','Cargando SheetJS…','Listo para cargar datos'];
-  let phase = 0;
-  const timer = setInterval(() => {
-    pct += 25;
-    if (loadBar) loadBar.style.width = pct + '%';
-    const msg = document.getElementById('loadingMessage');
-    if (msg && msgs[phase]) msg.textContent = msgs[phase];
-    phase++;
-    if (pct >= 100) {
-      clearInterval(timer);
+  _setupEventListeners();
+  _applyStoredTheme();
+
+  const fileId = DataStore.getDriveFileId();
+
+  if (!fileId) {
+    // No Drive ID configured → show admin panel to set one
+    if (overlay) { overlay.classList.add('fade-out'); setTimeout(() => overlay.remove(), 500); }
+    _showAdminPanel(true);
+    return;
+  }
+
+  // Auto-load from Google Drive
+  const driveUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+  if (loadBar) loadBar.style.width = '20%';
+  if (loadMsg) loadMsg.textContent = 'Cargando datos del torneo…';
+
+  DataStore.loadFromUrl(driveUrl)
+    .then(() => {
+      if (loadBar) loadBar.style.width = '100%';
+      if (loadMsg) loadMsg.textContent = '¡Listo!';
       setTimeout(() => {
         if (overlay) { overlay.classList.add('fade-out'); setTimeout(() => overlay.remove(), 500); }
-        if (uploadOv) uploadOv.classList.remove('d-none');
-        _setupEventListeners();
-        _applyStoredTheme();
+        _initDashboard();
       }, 400);
-    }
-  }, 200);
+    })
+    .catch(err => {
+      console.error('Error cargando desde Drive:', err);
+      if (loadMsg) loadMsg.textContent = 'Error al cargar datos. Intenta de nuevo.';
+      if (loadBar) { loadBar.style.background = '#DC2626'; loadBar.style.width = '100%'; }
+      setTimeout(() => {
+        if (overlay) { overlay.classList.add('fade-out'); setTimeout(() => overlay.remove(), 500); }
+        _showAdminPanel(false, 'No se pudo cargar el archivo desde Google Drive. Verifica que el enlace sea público y el File ID sea correcto.');
+      }, 1500);
+    });
 }
 
 /* ─── EVENT LISTENERS ─────────────────────────────────── */
@@ -94,10 +109,9 @@ function _setupEventListeners() {
     btn?.addEventListener('click', _toggleDarkMode);
   });
 
-  /* Upload new file button */
-  document.getElementById('uploadNewFile')?.addEventListener('click', () => {
-    const ov = document.getElementById('uploadOverlay');
-    if (ov) { ov.classList.remove('d-none'); }
+  /* Admin panel keyboard shortcut: Ctrl+Shift+A */
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.shiftKey && e.key === 'A') { e.preventDefault(); _showAdminPanel(false); }
   });
 
   /* Global search */
@@ -266,27 +280,102 @@ function _setupEventListeners() {
   document.getElementById('exportPDF')?.addEventListener('click', () => Utils.exportPDF());
 }
 
-/* ─── FILE UPLOAD ─────────────────────────────────────── */
-async function _handleFileUpload(file) {
-  const uploadOv = document.getElementById('uploadOverlay');
-  const progressWrap = document.getElementById('uploadProgress');
+/* ─── ADMIN PANEL ─────────────────────────────────────── */
+function _showAdminPanel(firstTime = false, errorMsg = '') {
+  const existing = document.getElementById('adminModal');
+  if (existing) existing.remove();
 
-  if (!file.name.match(/\.(xlsx|xls)$/i)) {
-    Utils.toast('Formato de archivo no válido. Usa .xlsx o .xls', 'danger');
-    return;
+  const currentId = DataStore.getDriveFileId();
+  const modal = document.createElement('div');
+  modal.id = 'adminModal';
+  modal.innerHTML = `
+    <div class="admin-backdrop"></div>
+    <div class="admin-modal">
+      <div class="admin-modal-header">
+        <i class="fas fa-shield-halved me-2"></i>Panel de administración
+        ${!firstTime ? '<button class="admin-close" id="adminClose"><i class="fas fa-xmark"></i></button>' : ''}
+      </div>
+      <div class="admin-modal-body">
+        ${errorMsg ? `<div class="admin-error"><i class="fas fa-triangle-exclamation me-2"></i>${errorMsg}</div>` : ''}
+        ${firstTime ? '<p class="admin-intro">Configura el origen de datos para que el dashboard cargue automáticamente.</p>' : ''}
+
+        <div class="admin-section">
+          <label class="admin-label"><i class="fab fa-google-drive me-2 text-warning"></i>Google Drive — File ID</label>
+          <p class="admin-hint">Abre el Excel en Drive → "Compartir" → "Cualquiera con el enlace puede ver" → copia el ID de la URL.</p>
+          <div class="admin-input-row">
+            <input type="text" id="adminDriveId" class="admin-input" placeholder="1BxiM...ZsGV" value="${currentId}">
+            <button class="admin-btn-primary" id="adminTestDrive"><i class="fas fa-bolt me-1"></i>Cargar</button>
+          </div>
+          <div id="adminDriveStatus" class="admin-status"></div>
+        </div>
+
+        <div class="admin-divider"><span>o bien</span></div>
+
+        <div class="admin-section">
+          <label class="admin-label"><i class="fas fa-file-excel me-2 text-success"></i>Subir archivo Excel directamente</label>
+          <div class="admin-dropzone" id="adminDropzone">
+            <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
+            <p>Arrastra el .xlsx aquí o <label for="adminFileInput" class="admin-link">selecciona archivo</label></p>
+            <input type="file" id="adminFileInput" accept=".xlsx,.xls" hidden>
+          </div>
+          <div id="adminFileStatus" class="admin-status"></div>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  // Backdrop close (only if not first time)
+  if (!firstTime) {
+    modal.querySelector('.admin-backdrop')?.addEventListener('click', () => modal.remove());
+    document.getElementById('adminClose')?.addEventListener('click', () => modal.remove());
   }
 
-  if (progressWrap) progressWrap.classList.remove('d-none');
+  // Drive load
+  document.getElementById('adminTestDrive')?.addEventListener('click', async () => {
+    const id = document.getElementById('adminDriveId')?.value.trim();
+    if (!id) return;
+    const status = document.getElementById('adminDriveStatus');
+    if (status) status.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Cargando…';
 
+    // Update the config variable in memory
+    try {
+      const url = `https://drive.google.com/uc?export=download&id=${id}`;
+      await DataStore.loadFromUrl(url);
+      if (status) status.innerHTML = `<span class="admin-ok"><i class="fas fa-check me-1"></i>${DataStore.getParticipants().length} participantes, ${DataStore.getCuts().length} cortes cargados.</span>`;
+      setTimeout(() => { modal.remove(); _initDashboard(); }, 800);
+    } catch (err) {
+      if (status) status.innerHTML = `<span class="admin-err"><i class="fas fa-xmark me-1"></i>Error: ${err.message}. Verifica que el archivo sea público.</span>`;
+    }
+  });
+
+  // File upload
+  const adminDropzone  = document.getElementById('adminDropzone');
+  const adminFileInput = document.getElementById('adminFileInput');
+
+  adminFileInput?.addEventListener('change', e => {
+    if (e.target.files[0]) _handleAdminFileUpload(e.target.files[0], modal);
+  });
+  adminDropzone?.addEventListener('dragover', e => { e.preventDefault(); adminDropzone.classList.add('drag-over'); });
+  adminDropzone?.addEventListener('dragleave', () => adminDropzone.classList.remove('drag-over'));
+  adminDropzone?.addEventListener('drop', e => {
+    e.preventDefault(); adminDropzone.classList.remove('drag-over');
+    if (e.dataTransfer.files[0]) _handleAdminFileUpload(e.dataTransfer.files[0], modal);
+  });
+}
+
+async function _handleAdminFileUpload(file, modal) {
+  const status = document.getElementById('adminFileStatus');
+  if (!file.name.match(/\.(xlsx|xls)$/i)) {
+    if (status) status.innerHTML = '<span class="admin-err">Formato no válido. Usa .xlsx o .xls</span>';
+    return;
+  }
+  if (status) status.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Procesando…';
   try {
     await DataStore.loadFile(file);
-    if (uploadOv) uploadOv.classList.add('d-none');
-    _initDashboard();
-    Utils.toast(`Archivo cargado: ${DataStore.getParticipants().length} participantes, ${DataStore.getCuts().length} cortes`, 'success', 4000);
+    if (status) status.innerHTML = `<span class="admin-ok"><i class="fas fa-check me-1"></i>${DataStore.getParticipants().length} participantes, ${DataStore.getCuts().length} cortes.</span>`;
+    setTimeout(() => { modal?.remove(); _initDashboard(); }, 800);
   } catch (err) {
-    console.error('Error cargando archivo:', err);
-    Utils.toast('Error al leer el archivo. Verifica el formato.', 'danger', 5000);
-    if (progressWrap) progressWrap.classList.add('d-none');
+    if (status) status.innerHTML = `<span class="admin-err">Error al leer el archivo.</span>`;
   }
 }
 
