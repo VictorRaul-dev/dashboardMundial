@@ -579,8 +579,8 @@ function _renderRankingTable() {
   const col = AppState.tableSortCol;
   const asc = AppState.tableSortAsc;
   data.sort((a, b) => {
-    let va = col === 'exacto' ? a.exacto : col === 'puntaje' ? a.puntaje : a.ranking;
-    let vb = col === 'exacto' ? b.exacto : col === 'puntaje' ? b.puntaje : b.ranking;
+    let va = col === 'exacto' ? a.exacto : col === 'puntaje' ? a.puntaje : col === 'puntajeDelta' ? (a.puntajeDelta ?? -Infinity) : col === 'delta' ? (a.delta ?? -Infinity) : a.ranking;
+    let vb = col === 'exacto' ? b.exacto : col === 'puntaje' ? b.puntaje : col === 'puntajeDelta' ? (b.puntajeDelta ?? -Infinity) : col === 'delta' ? (b.delta ?? -Infinity) : b.ranking;
     return asc ? va - vb : vb - va;
   });
 
@@ -627,9 +627,9 @@ function _renderRankingTable() {
         </span>
       </td>
       <td><strong>${Utils.formatNumber(r.puntaje)}</strong></td>
-      <td>${exactHtml}</td>
       <td>${Utils.varBadge(r.puntajeDelta)}</td>
       <td>${Utils.varBadge(r.delta)}</td>
+      <td>${exactHtml}</td>
       <td class="sparkline-cell"><canvas id="${sparkId}" width="80" height="28"></canvas></td>
     </tr>`;
   }).join('');
