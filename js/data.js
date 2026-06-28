@@ -18,7 +18,7 @@ const participantesPeru = [" Percy Gomez"," Victor Raul Cercado Lopez"," Karina 
    del archivo tienen nombres ligeramente distintos.
 ───────────────────────────────────────────────────────── */
 const COLUMN_MAP = {
-  fecha:    ['fecha de actualización', 'fecha actualizacion', 'fecha', 'date'],
+  fecha:    ['fecha de actualización', 'fecha actualización', 'fecha actualizacion', 'fecha actualzacion', 'fecha', 'date'],
   ranking:  ['ranking', 'rank', 'posicion', 'posición', 'pos'],
   nombre:   ['nombre', 'name', 'participante', 'jugador'],
   puntaje:  ['puntaje', 'puntos', 'pts', 'score', 'points'],
@@ -47,7 +47,7 @@ const DataStore = (() => {
           _updateProgress(40, 'Parseando hoja…');
           const sheetName = wb.SheetNames[0];
           const ws = wb.Sheets[sheetName];
-          const rawRows = XLSX.utils.sheet_to_json(ws, { defval: null, raw: false });
+          const rawRows = XLSX.utils.sheet_to_json(ws, { defval: null, raw: true });
           _updateProgress(60, `Procesando ${rawRows.length} filas…`);
           _parseRows(rawRows);
           _updateProgress(80, 'Calculando métricas…');
@@ -85,7 +85,9 @@ const DataStore = (() => {
       const fechaRaw = headers.fecha ? row[headers.fecha] : null;
       let fecha = null;
       if (fechaRaw instanceof Date) {
-        fecha = fechaRaw;
+        fecha = isNaN(fechaRaw) ? null : fechaRaw;
+      } else if (typeof fechaRaw === 'number' && fechaRaw > 1000) {
+        fecha = Utils.parseExcelDate(fechaRaw);
       } else if (fechaRaw) {
         fecha = Utils.parseExcelDate(fechaRaw) || new Date(fechaRaw);
       }
