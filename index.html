@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CenGOL — Dashboard Mundial 2026</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════
+       LOADING OVERLAY
+  ═══════════════════════════════════════════════ -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-content">
+      <div class="loading-logo">
+        <img src="assets/logo.svg" alt="CenGOL" class="loading-logo-img">
+      </div>
+      <div class="loading-spinner"><div class="spinner-ring"></div></div>
+      <p id="loadingMessage">Iniciando dashboard...</p>
+      <div class="loading-progress">
+        <div id="loadingBar" class="loading-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       FILE UPLOAD OVERLAY
+  ═══════════════════════════════════════════════ -->
+  <div id="uploadOverlay" class="upload-overlay d-none">
+    <div class="upload-card">
+      <div class="upload-header">
+        <img src="assets/logo.svg" alt="CenGOL" class="upload-logo">
+        <h2 class="upload-title">CenGOL</h2>
+        <p class="upload-subtitle">Dashboard Mundial 2026</p>
+      </div>
+      <div class="upload-dropzone" id="dropzone">
+        <div class="dropzone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+        <h4>Arrastra el archivo Excel aquí</h4>
+        <p class="text-muted">o haz clic para seleccionar</p>
+        <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
+        <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
+          <i class="fas fa-folder-open me-2"></i>Seleccionar archivo
+        </button>
+        <div class="upload-formats mt-3">
+          <span class="format-badge"><i class="fas fa-file-excel me-1"></i>.xlsx</span>
+          <span class="format-badge"><i class="fas fa-file-excel me-1"></i>.xls</span>
+        </div>
+      </div>
+      <div id="uploadProgress" class="upload-progress d-none">
+        <div class="progress mt-3"><div id="uploadBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div></div>
+        <p id="uploadStatus" class="mt-2 text-muted small text-center"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════════════ -->
+  <nav id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <img src="assets/logo.svg" alt="CenGOL" class="sidebar-logo">
+      <span class="sidebar-brand">CenGOL</span>
+    </div>
+
+    <div class="sidebar-nav-label">Principal</div>
+    <ul class="sidebar-nav">
+      <li class="sidebar-item active" data-section="overview">
+        <a class="sidebar-link"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+      </li>
+      <li class="sidebar-item" data-section="ranking">
+        <a class="sidebar-link"><i class="fas fa-list-ol"></i><span>Ranking</span></a>
+      </li>
+    </ul>
+
+    <div class="sidebar-nav-label">Visualizaciones</div>
+    <ul class="sidebar-nav">
+      <li class="sidebar-item" data-section="evolution">
+        <a class="sidebar-link"><i class="fas fa-chart-line"></i><span>Evolución</span></a>
+      </li>
+      <li class="sidebar-item" data-section="comparator">
+        <a class="sidebar-link"><i class="fas fa-code-compare"></i><span>Comparador</span></a>
+      </li>
+      <li class="sidebar-item" data-section="race">
+        <a class="sidebar-link"><i class="fas fa-flag-checkered"></i><span>Race Chart</span></a>
+      </li>
+      <li class="sidebar-item" data-section="heatmap">
+        <a class="sidebar-link"><i class="fas fa-fire-flame-curved"></i><span>Heatmap</span></a>
+      </li>
+    </ul>
+
+    <div class="sidebar-nav-label">Análisis</div>
+    <ul class="sidebar-nav">
+      <li class="sidebar-item" data-section="analysis">
+        <a class="sidebar-link"><i class="fas fa-chart-scatter"></i><span>Estadísticas</span></a>
+      </li>
+      <li class="sidebar-item" data-section="exactscores">
+        <a class="sidebar-link"><i class="fas fa-bullseye"></i><span>Exactos</span></a>
+      </li>
+      <li class="sidebar-item" data-section="trends">
+        <a class="sidebar-link"><i class="fas fa-arrow-trend-up"></i><span>Tendencias</span></a>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <button id="darkModeToggle" class="sidebar-footer-btn">
+        <i class="fas fa-moon" id="darkModeIcon"></i><span id="darkModeLabel">Modo oscuro</span>
+      </button>
+      <button id="uploadNewFile" class="sidebar-footer-btn">
+        <i class="fas fa-upload"></i><span>Cargar archivo</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════════════ -->
+  <main id="mainContent" class="main-content">
+
+    <!-- TOP HEADER -->
+    <header class="top-header">
+      <div class="header-left">
+        <button id="sidebarToggle" class="icon-btn me-3"><i class="fas fa-bars"></i></button>
+        <div>
+          <h1 class="header-title">Dashboard Mundial 2026</h1>
+          <p class="header-sub">Quiniela CenGOL &bull; FIFA World Cup 2026</p>
+        </div>
+      </div>
+
+      <div class="header-kpis d-none d-xl-flex">
+        <div class="header-kpi">
+          <i class="fas fa-users"></i>
+          <div><span id="hkParticipantes" class="hk-val">—</span><span class="hk-lbl">Participantes</span></div>
+        </div>
+        <div class="header-kpi-divider"></div>
+        <div class="header-kpi">
+          <i class="fas fa-layer-group"></i>
+          <div><span id="hkCortes" class="hk-val">—</span><span class="hk-lbl">Cortes</span></div>
+        </div>
+        <div class="header-kpi-divider"></div>
+        <div class="header-kpi">
+          <i class="fas fa-clock"></i>
+          <div><span id="hkFecha" class="hk-val">—</span><span class="hk-lbl">Último corte</span></div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Global search -->
+        <div class="global-search-wrap" id="globalSearchWrap">
+          <i class="fas fa-search gs-icon"></i>
+          <input type="text" id="globalSearch" class="gs-input" placeholder="Buscar participante..." autocomplete="off">
+          <div id="gsSuggestions" class="gs-suggestions"></div>
+        </div>
+
+        <button class="icon-btn" id="filterToggle" title="Filtros">
+          <i class="fas fa-sliders"></i>
+          <span id="filterBadge" class="filter-badge d-none">0</span>
+        </button>
+
+        <!-- Export dropdown -->
+        <div class="dropdown">
+          <button class="icon-btn" data-bs-toggle="dropdown" title="Exportar"><i class="fas fa-download"></i></button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0">
+            <li><h6 class="dropdown-header">Datos</h6></li>
+            <li><a class="dropdown-item" id="exportCSV"><i class="fas fa-file-csv me-2 text-success"></i>CSV</a></li>
+            <li><a class="dropdown-item" id="exportExcel"><i class="fas fa-file-excel me-2 text-success"></i>Excel</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header">Visuales</h6></li>
+            <li><a class="dropdown-item" id="exportPNG"><i class="fas fa-image me-2 text-primary"></i>PNG (vista actual)</a></li>
+            <li><a class="dropdown-item" id="exportPDF"><i class="fas fa-file-pdf me-2 text-danger"></i>PDF (reporte)</a></li>
+          </ul>
+        </div>
+
+        <button class="icon-btn" id="darkModeToggleHeader" title="Modo oscuro">
+          <i class="fas fa-moon" id="darkModeIconHeader"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- FILTER PANEL -->
+    <div id="filterPanel" class="filter-panel d-none">
+      <div class="filter-panel-inner">
+        <div class="filter-section">
+          <label class="filter-label">Corte</label>
+          <select id="filterCut" class="form-select form-select-sm"><option value="">Todos</option></select>
+        </div>
+        <div class="filter-section">
+          <label class="filter-label">Top</label>
+          <div class="top-filter-btns">
+            <button class="top-btn active" data-top="100">Top 100</button>
+            <button class="top-btn" data-top="50">Top 50</button>
+            <button class="top-btn" data-top="20">Top 20</button>
+            <button class="top-btn" data-top="10">Top 10</button>
+          </div>
+        </div>
+        <div class="filter-section">
+          <label class="filter-label">Opciones</label>
+          <div class="form-check"><input class="form-check-input" type="checkbox" id="filterPeru"><label class="form-check-label" for="filterPeru">🇵🇪 Solo Perú</label></div>
+          <div class="form-check mt-1"><input class="form-check-input" type="checkbox" id="filterExacto"><label class="form-check-label" for="filterExacto"><i class="fas fa-bullseye text-warning me-1"></i>Con marcador exacto</label></div>
+        </div>
+        <div class="filter-section">
+          <button class="btn btn-sm btn-outline-secondary w-100" id="clearFilters">
+            <i class="fas fa-xmark me-1"></i>Limpiar filtros
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIMELINE BAR -->
+    <div id="timelineBar" class="timeline-bar d-none">
+      <div class="timeline-inner">
+        <span class="timeline-icon"><i class="fas fa-timeline"></i></span>
+        <button id="timelinePrev" class="tl-nav-btn"><i class="fas fa-chevron-left"></i></button>
+        <div class="timeline-scroll-wrap">
+          <div id="timelineTrack" class="timeline-track"></div>
+        </div>
+        <button id="timelineNext" class="tl-nav-btn"><i class="fas fa-chevron-right"></i></button>
+        <div class="timeline-current-badge">
+          <i class="fas fa-map-pin me-1"></i>
+          <span id="timelineCurrentLabel">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE CONTENT -->
+    <div id="pageContent" class="page-content">
+
+      <!-- ══════════════════════════════════
+           SECTION: OVERVIEW (DASHBOARD)
+      ══════════════════════════════════ -->
+      <section id="section-overview" class="content-section active">
+
+        <!-- KPI Row 1 — Podium -->
+        <div class="row g-3 mb-3">
+          <div class="col-xl-3 col-lg-4 col-sm-6">
+            <div class="kpi-card kpi-gold">
+              <div class="kpi-ribbon">🏆</div>
+              <div class="kpi-icon-wrap"><i class="fas fa-trophy"></i></div>
+              <div class="kpi-body">
+                <p class="kpi-label">Líder actual</p>
+                <h3 class="kpi-value" id="kpiLeader">—</h3>
+                <div class="kpi-sub"><span id="kpiLeaderScore">pts: —</span></div>
+              </div>
+              <div class="kpi-sparkline"><canvas id="sparkLeader"></canvas></div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-lg-4 col-sm-6">
+            <div class="kpi-card kpi-silver">
+              <div class="kpi-ribbon">🥈</div>
+              <div class="kpi-icon-wrap"><i class="fas fa-medal"></i></div>
+              <div class="kpi-body">
+                <p class="kpi-label">Segundo lugar</p>
+                <h3 class="kpi-value" id="kpiSecond">—</h3>
+                <div class="kpi-sub"><span id="kpiSecondScore">pts: —</span></div>
+              </div>
+              <div class="kpi-sparkline"><canvas id="sparkSecond"></canvas></div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-lg-4 col-sm-6">
+            <div class="kpi-card kpi-bronze">
+              <div class="kpi-ribbon">🥉</div>
+              <div class="kpi-icon-wrap"><i class="fas fa-award"></i></div>
+              <div class="kpi-body">
+                <p class="kpi-label">Tercer lugar</p>
+                <h3 class="kpi-value" id="kpiThird">—</h3>
+                <div class="kpi-sub"><span id="kpiThirdScore">pts: —</span></div>
+              </div>
+              <div class="kpi-sparkline"><canvas id="sparkThird"></canvas></div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-lg-4 col-sm-6">
+            <div class="kpi-card kpi-primary">
+              <div class="kpi-icon-wrap"><i class="fas fa-chart-bar"></i></div>
+              <div class="kpi-body">
+                <p class="kpi-label">Promedio puntaje</p>
+                <h3 class="kpi-value counter" id="kpiAvg">0</h3>
+                <div class="kpi-sub"><span id="kpiAvgSub">pts promedio</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI Row 2 — Movement & Exact -->
+        <div class="row g-3 mb-4">
+          <div class="col-xl-3 col-lg-4 col-sm-6">
+            <div class="kpi-card kpi-success">
+              <div class="kpi-icon-wrap"><i class="fas fa-arrow-trend-up"></i></div>
+              <div class="kpi-body">
+                <p class="kpi-label">Mayor ascenso</p>
+                <h3 class="kpi-value" id="kpiRise">—</h3>
+                <div class="kpi-sub"><span id="kpiRiseSub">último corte</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-lg-4 col-sm-6">
+            <div class="kpi-card kpi-danger">
+              <div class="kpi-icon-wrap"><i class="fas fa-arrow-trend-down"></i></div>
+              <div class="kpi-body">
+                <p class="kpi-label">Mayor caída</p>
+                <h3 class="kpi-value" id="kpiFall">—</h3>
+                <div class="kpi-sub"><span id="kpiFallSub">último corte</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-lg-4 col-sm-6">
+            <div class="kpi-card kpi-info">
+              <div class="kpi-icon-wrap"><i class="fas fa-equals"></i></div>
+              <div class="kpi-body">
+                <p class="kpi-label">Más constante</p>
+                <h3 class="kpi-value" id="kpiConsistent">—</h3>
+                <div class="kpi-sub"><span id="kpiConsistentSub">menor variación</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-lg-4 col-sm-6">
+            <div class="kpi-card kpi-warning">
+              <div class="kpi-icon-wrap"><i class="fas fa-bullseye"></i></div>
+              <div class="kpi-body">
+                <p class="kpi-label">Marcadores exactos</p>
+                <h3 class="kpi-value counter" id="kpiExact">0</h3>
+                <div class="kpi-sub"><span id="kpiExactSub">Más: —</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick charts -->
+        <div class="row g-3 mb-3">
+          <div class="col-lg-8">
+            <div class="chart-card h-100">
+              <div class="chart-card-header">
+                <div class="cch-left">
+                  <i class="fas fa-chart-line text-primary me-2"></i>
+                  <span>Evolución del Top 10 — Ranking</span>
+                </div>
+                <div class="cch-right">
+                  <button class="cch-btn active" data-quick-view="ranking" title="Ranking">Ranking</button>
+                  <button class="cch-btn" data-quick-view="score" title="Puntaje">Puntaje</button>
+                </div>
+              </div>
+              <div class="chart-card-body" style="min-height:260px">
+                <canvas id="quickChart"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="chart-card h-100">
+              <div class="chart-card-header">
+                <div class="cch-left"><i class="fas fa-chart-donut text-warning me-2"></i><span>Top 5 — Puntajes</span></div>
+              </div>
+              <div class="chart-card-body" style="min-height:260px">
+                <canvas id="quickDonut"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Variation chart -->
+        <div class="row g-3 mb-3">
+          <div class="col-12">
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <div class="cch-left"><i class="fas fa-sort text-success me-2"></i><span>Mayores variaciones — Último corte</span></div>
+                <div class="cch-right">
+                  <select id="variationCutSelectOv" class="form-select form-select-sm w-auto"></select>
+                </div>
+              </div>
+              <div class="chart-card-body" style="min-height:220px">
+                <canvas id="variationChartOv"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ══════════════════════════════════
+           SECTION: RANKING TABLE
+      ══════════════════════════════════ -->
+      <section id="section-ranking" class="content-section">
+        <div class="section-header">
+          <div>
+            <h4 class="section-title"><i class="fas fa-list-ol me-2"></i>Ranking Interactivo</h4>
+            <p class="section-sub">Tabla completa con búsqueda, filtros y paginación</p>
+          </div>
+          <div class="section-actions">
+            <select id="rankingCutSelect" class="form-select form-select-sm"></select>
+            <div class="search-box-sm">
+              <i class="fas fa-search"></i>
+              <input type="text" id="rankingSearch" class="form-control form-control-sm" placeholder="Buscar...">
+            </div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="table-filter-pills">
+              <button class="pill active" data-tfilter="all">Todos</button>
+              <button class="pill" data-tfilter="peru">🇵🇪 Perú</button>
+              <button class="pill" data-tfilter="top10">Top 10</button>
+              <button class="pill" data-tfilter="top20">Top 20</button>
+              <button class="pill" data-tfilter="top50">Top 50</button>
+              <button class="pill" data-tfilter="exacto"><i class="fas fa-bullseye me-1"></i>Exacto</button>
+            </div>
+            <span id="tableCount" class="table-count">0 participantes</span>
+          </div>
+
+          <div class="table-responsive">
+            <table id="rankingTable" class="table ranking-table">
+              <thead>
+                <tr>
+                  <th class="col-rank sortable" data-col="ranking"># <i class="fas fa-sort sort-icon"></i></th>
+                  <th class="col-name">Nombre</th>
+                  <th class="col-score sortable" data-col="puntaje">Puntaje <i class="fas fa-sort sort-icon"></i></th>
+                  <th class="col-exact sortable" data-col="exacto"><i class="fas fa-bullseye me-1"></i>Exactos <i class="fas fa-sort sort-icon"></i></th>
+                  <th class="col-var">Variación</th>
+                  <th class="col-trend">Tendencia</th>
+                </tr>
+              </thead>
+              <tbody id="rankingTableBody">
+                <tr><td colspan="6" class="empty-table-msg">
+                  <i class="fas fa-futbol fa-2x text-muted d-block mb-2"></i>
+                  Carga un archivo Excel para ver el ranking
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-footer-bar">
+            <div class="page-info">
+              Mostrando <b id="pgFrom">0</b>–<b id="pgTo">0</b> de <b id="pgTotal">0</b>
+            </div>
+            <div class="page-controls">
+              <select id="pageSizeSelect" class="form-select form-select-sm">
+                <option value="25">25 / pág.</option>
+                <option value="50">50 / pág.</option>
+                <option value="100">100 / pág.</option>
+              </select>
+              <button id="prevPage" class="pg-btn" disabled><i class="fas fa-chevron-left"></i></button>
+              <span id="pageNums" class="page-nums"></span>
+              <button id="nextPage" class="pg-btn" disabled><i class="fas fa-chevron-right"></i></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════
+           SECTION: EVOLUTION
+      ══════════════════════════════════ -->
+      <section id="section-evolution" class="content-section">
+        <div class="section-header">
+          <div>
+            <h4 class="section-title"><i class="fas fa-chart-line me-2"></i>Evolución</h4>
+            <p class="section-sub">Seguimiento de ranking y puntaje a través del tiempo</p>
+          </div>
+        </div>
+
+        <!-- Participant selector -->
+        <div class="chart-card mb-3">
+          <div class="chart-card-header">
+            <div class="cch-left"><i class="fas fa-users me-2"></i>Participantes seleccionados</div>
+            <div class="cch-right gap-2">
+              <button class="cch-btn" id="addTop3EvoBtn">Top 3 actual</button>
+              <button class="cch-btn" id="addPeruEvoBtn">🇵🇪 Top Perú</button>
+              <button class="cch-btn" id="clearEvoBtn">Limpiar</button>
+            </div>
+          </div>
+          <div class="chart-card-body">
+            <div class="evo-search-wrap">
+              <i class="fas fa-search"></i>
+              <input type="text" id="evoSearch" class="evo-search-input" placeholder="Buscar y agregar participante...">
+              <div id="evoSearchDropdown" class="evo-search-dropdown"></div>
+            </div>
+            <div id="evoSelectedTags" class="evo-tags mt-2"></div>
+          </div>
+        </div>
+
+        <div class="chart-card mb-3">
+          <div class="chart-card-header">
+            <div class="cch-left"><i class="fas fa-sort-numeric-down text-primary me-2"></i>Evolución del Ranking</div>
+            <small class="text-muted">Eje Y invertido: posición 1 en la parte superior</small>
+          </div>
+          <div class="chart-card-body chart-tall"><canvas id="rankingEvoChart"></canvas></div>
+        </div>
+
+        <div class="chart-card mb-3">
+          <div class="chart-card-header">
+            <div class="cch-left"><i class="fas fa-coins text-warning me-2"></i>Evolución del Puntaje</div>
+          </div>
+          <div class="chart-card-body chart-tall"><canvas id="scoreEvoChart"></canvas></div>
+        </div>
+
+        <div class="chart-card mb-3">
+          <div class="chart-card-header">
+            <div class="cch-left"><i class="fas fa-exchange-alt text-success me-2"></i>Variación entre cortes</div>
+            <div class="cch-right">
+              <select id="variationCutSelectEvo" class="form-select form-select-sm w-auto"></select>
+            </div>
+          </div>
+          <div class="chart-card-body chart-medium"><canvas id="variationChartEvo"></canvas></div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════
+           SECTION: COMPARATOR
+      ══════════════════════════════════ -->
+      <section id="section-comparator" class="content-section">
+        <div class="section-header">
+          <div>
+            <h4 class="section-title"><i class="fas fa-code-compare me-2"></i>Comparador</h4>
+            <p class="section-sub">Compara el rendimiento de dos participantes</p>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-5">
+            <div class="comp-selector comp-p1">
+              <div class="comp-label">Participante 1</div>
+              <div class="comp-search-wrap">
+                <input type="text" id="comp1Input" class="form-control" placeholder="Buscar..." autocomplete="off">
+                <div id="comp1Dropdown" class="comp-dropdown"></div>
+              </div>
+              <div id="comp1Card" class="comp-selected-card p1-card d-none">
+                <span id="comp1Name" class="comp-name"></span>
+                <button class="comp-clear" data-player="1"><i class="fas fa-xmark"></i></button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2 d-flex align-items-center justify-content-center">
+            <div class="vs-badge">VS</div>
+          </div>
+          <div class="col-md-5">
+            <div class="comp-selector comp-p2">
+              <div class="comp-label">Participante 2</div>
+              <div class="comp-search-wrap">
+                <input type="text" id="comp2Input" class="form-control" placeholder="Buscar..." autocomplete="off">
+                <div id="comp2Dropdown" class="comp-dropdown"></div>
+              </div>
+              <div id="comp2Card" class="comp-selected-card p2-card d-none">
+                <span id="comp2Name" class="comp-name"></span>
+                <button class="comp-clear" data-player="2"><i class="fas fa-xmark"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="compResults" class="d-none">
+          <!-- Stats table -->
+          <div class="chart-card mb-3">
+            <div class="chart-card-header"><div class="cch-left"><i class="fas fa-table me-2"></i>Estadísticas comparativas</div></div>
+            <div class="chart-card-body">
+              <div class="table-responsive">
+                <table class="table comp-stats-table">
+                  <thead><tr>
+                    <th>Estadística</th>
+                    <th id="compH1" class="text-p1">—</th>
+                    <th id="compH2" class="text-p2">—</th>
+                  </tr></thead>
+                  <tbody id="compStatsBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-lg-7">
+              <div class="chart-card h-100">
+                <div class="chart-card-header"><div class="cch-left"><i class="fas fa-chart-line me-2"></i>Evolución del Ranking</div></div>
+                <div class="chart-card-body chart-medium"><canvas id="compRankChart"></canvas></div>
+              </div>
+            </div>
+            <div class="col-lg-5">
+              <div class="chart-card h-100">
+                <div class="chart-card-header"><div class="cch-left"><i class="fas fa-spider me-2"></i>Radar de Desempeño</div></div>
+                <div class="chart-card-body d-flex align-items-center justify-content-center" style="min-height:280px"><canvas id="compRadarChart"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-card mb-3">
+            <div class="chart-card-header"><div class="cch-left"><i class="fas fa-robot me-2 text-primary"></i>Conclusión automática</div></div>
+            <div class="chart-card-body"><div id="compConclusion" class="conclusion-box"></div></div>
+          </div>
+        </div>
+
+        <div id="compEmpty" class="empty-state">
+          <i class="fas fa-code-compare fa-3x"></i>
+          <p>Selecciona dos participantes para comparar</p>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════
+           SECTION: RACE CHART
+      ══════════════════════════════════ -->
+      <section id="section-race" class="content-section">
+        <div class="section-header">
+          <div>
+            <h4 class="section-title"><i class="fas fa-flag-checkered me-2"></i>Race Chart — Ranking Dinámico</h4>
+            <p class="section-sub">Animación del Top 20 a través de todos los cortes</p>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-header flex-wrap gap-2">
+            <div class="race-controls">
+              <button id="racePlayBtn" class="race-ctrl-btn race-play" disabled><i class="fas fa-play"></i><span>Play</span></button>
+              <button id="racePauseBtn" class="race-ctrl-btn" disabled><i class="fas fa-pause"></i><span>Pausa</span></button>
+              <button id="raceResetBtn" class="race-ctrl-btn" disabled><i class="fas fa-rotate-left"></i><span>Reiniciar</span></button>
+              <div class="race-speed-wrap">
+                <label>Velocidad</label>
+                <input type="range" id="raceSpeed" min="200" max="3000" step="100" value="1200" class="form-range">
+                <span id="raceSpeedLbl">1.2s</span>
+              </div>
+            </div>
+            <div class="race-status">
+              <span class="race-cut-badge" id="raceCutBadge">Corte: —</span>
+              <span class="race-prog-text" id="raceProgText">0 / 0</span>
+            </div>
+          </div>
+          <div class="chart-card-body" style="min-height:540px">
+            <canvas id="raceChart"></canvas>
+          </div>
+          <div class="race-mini-timeline">
+            <div id="raceMiniBar" class="race-mini-progress" style="width:0%"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════
+           SECTION: HEATMAP
+      ══════════════════════════════════ -->
+      <section id="section-heatmap" class="content-section">
+        <div class="section-header">
+          <div>
+            <h4 class="section-title"><i class="fas fa-fire-flame-curved me-2"></i>Heatmap de Posiciones</h4>
+            <p class="section-sub">Participantes vs cortes — verde = mejor posición</p>
+          </div>
+          <div class="section-actions">
+            <select id="heatmapTopN" class="form-select form-select-sm">
+              <option value="20">Top 20</option>
+              <option value="50">Top 50</option>
+              <option value="100">Top 100</option>
+            </select>
+            <div class="form-check form-check-inline mb-0 ms-2">
+              <input class="form-check-input" type="checkbox" id="heatmapPeruOnly">
+              <label class="form-check-label small" for="heatmapPeruOnly">🇵🇪 Solo Perú</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="heatmap-legend">
+              <span class="hl-label">Mejor (#1)</span>
+              <div class="hl-gradient"></div>
+              <span class="hl-label">Peor (#100)</span>
+            </div>
+          </div>
+          <div class="chart-card-body p-0">
+            <div id="heatmapContainer" class="heatmap-scroll-wrap">
+              <canvas id="heatmapCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════
+           SECTION: ANALYSIS
+      ══════════════════════════════════ -->
+      <section id="section-analysis" class="content-section">
+        <div class="section-header">
+          <div>
+            <h4 class="section-title"><i class="fas fa-chart-scatter me-2"></i>Análisis Estadístico</h4>
+            <p class="section-sub">Distribución, correlaciones y estadísticas descriptivas</p>
+          </div>
+          <div class="section-actions">
+            <select id="analysisCutSelect" class="form-select form-select-sm"></select>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-lg-6">
+            <div class="chart-card h-100">
+              <div class="chart-card-header"><div class="cch-left"><i class="fas fa-circle-dot text-primary me-2"></i>Scatter: Ranking vs Puntaje</div></div>
+              <div class="chart-card-body chart-medium"><canvas id="scatterChart"></canvas></div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="chart-card h-100">
+              <div class="chart-card-header"><div class="cch-left"><i class="fas fa-chart-bar text-info me-2"></i>Distribución de Puntajes</div></div>
+              <div class="chart-card-body chart-medium"><canvas id="distChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats cards -->
+        <div class="chart-card mb-3">
+          <div class="chart-card-header"><div class="cch-left"><i class="fas fa-calculator me-2"></i>Estadísticas descriptivas</div></div>
+          <div class="chart-card-body">
+            <div class="row g-3" id="statsCardsRow"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════
+           SECTION: EXACT SCORES
+      ══════════════════════════════════ -->
+      <section id="section-exactscores" class="content-section">
+        <div class="section-header">
+          <div>
+            <h4 class="section-title"><i class="fas fa-bullseye me-2 text-warning"></i>Marcadores Exactos</h4>
+            <p class="section-sub">Participantes que acertaron marcadores exactos</p>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-lg-8">
+            <div class="chart-card h-100">
+              <div class="chart-card-header"><div class="cch-left"><i class="fas fa-ranking-star me-2 text-warning"></i>Ranking por Marcadores Exactos</div></div>
+              <div class="chart-card-body chart-medium"><canvas id="exactBarChart"></canvas></div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="chart-card h-100">
+              <div class="chart-card-header"><div class="cch-left"><i class="fas fa-chart-pie me-2"></i>Distribución</div></div>
+              <div class="chart-card-body d-flex align-items-center justify-content-center" style="min-height:260px"><canvas id="exactPieChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card mb-3">
+          <div class="chart-card-header"><div class="cch-left"><i class="fas fa-table me-2"></i>Tabla detallada</div></div>
+          <div class="table-responsive">
+            <table class="table ranking-table">
+              <thead><tr><th>#</th><th>Participante</th><th>Exactos</th><th>Ranking actual</th><th>Puntaje</th></tr></thead>
+              <tbody id="exactTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════
+           SECTION: TRENDS
+      ══════════════════════════════════ -->
+      <section id="section-trends" class="content-section">
+        <div class="section-header">
+          <div>
+            <h4 class="section-title"><i class="fas fa-arrow-trend-up me-2"></i>Tendencias Globales</h4>
+            <p class="section-sub">Estadísticas automáticas calculadas sobre todos los cortes</p>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4" id="trendCardsRow"></div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-lg-6">
+            <div class="chart-card h-100">
+              <div class="chart-card-header"><div class="cch-left"><i class="fas fa-crown text-warning me-2"></i>Más veces líder (#1)</div></div>
+              <div class="chart-card-body"><div id="listMostLeader" class="lb-list"></div></div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="chart-card h-100">
+              <div class="chart-card-header"><div class="cch-left"><i class="fas fa-medal text-primary me-2"></i>Más veces Top 10</div></div>
+              <div class="chart-card-body"><div id="listMostTop10" class="lb-list"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-lg-6">
+            <div class="chart-card h-100">
+              <div class="chart-card-header"><div class="cch-left"><i class="fas fa-rocket text-success me-2"></i>Mayor crecimiento total</div></div>
+              <div class="chart-card-body"><div id="listMostGrowth" class="lb-list"></div></div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="chart-card h-100">
+              <div class="chart-card-header"><div class="cch-left"><i class="fas fa-equals text-info me-2"></i>Más constantes (menor σ)</div></div>
+              <div class="chart-card-body"><div id="listMostConsistent" class="lb-list"></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /pageContent -->
+  </main><!-- /mainContent -->
+
+  <!-- Toast container -->
+  <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+  <!-- CDN Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <!-- App scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
