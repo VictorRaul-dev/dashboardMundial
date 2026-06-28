@@ -8,7 +8,7 @@
    Modifica estos arrays con los nombres de los participantes
    peruanos para que aparezca la bandera 🇵🇪 automáticamente.
 ───────────────────────────────────────────────────────── */
-const participantesPeru = [
+const participantesPeru = [" Percy Gomez"," Victor Raul Cercado Lopez"," Karina Otárola"
   // Ejemplo: "Juan Pérez", "María García"
   // Agrega aquí los nombres exactamente como aparecen en el Excel
 ];
