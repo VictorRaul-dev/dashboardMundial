@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <circle cx="60" cy="60" r="58" fill="#163E73" stroke="#D4AF37" stroke-width="4"/>
+  <text x="60" y="52" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="#D4AF37" text-anchor="middle">CEN</text>
+  <text x="60" y="74" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="#FFFFFF" text-anchor="middle">GOL</text>
+  <circle cx="60" cy="60" r="30" fill="none" stroke="#D4AF37" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>
+</svg>
