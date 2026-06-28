@@ -500,7 +500,7 @@ th.sort-desc .sort-icon { transform: rotate(180deg); }
 .ranking-table tbody tr { transition: background var(--t-fast); }
 .ranking-table tbody tr:hover { background: var(--bg-card2); }
 .ranking-table tbody td { padding: 10px 16px; border-bottom: 1px solid var(--border-color); vertical-align: middle; color: var(--text-primary); }
-.col-score {width:120px;}
+.col-score {width:60px;}
 
 /* Row highlights */
 .row-top1 { background: linear-gradient(90deg, rgba(212,175,55,.08), transparent); }
