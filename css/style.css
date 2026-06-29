@@ -502,12 +502,33 @@ th.sort-desc .sort-icon { transform: rotate(180deg); }
 .ranking-table tbody td { padding: 10px 16px; border-bottom: 1px solid var(--border-color); vertical-align: middle; color: var(--text-primary); }
 .col-score {width:60px;}
 
+/* ── Dark mode table overrides (beat Bootstrap's --bs-table-bg) ── */
+[data-theme="dark"] .table-card { background: var(--bg-card); }
+[data-theme="dark"] .ranking-table,
+[data-theme="dark"] .ranking-table > :not(caption) > * { --bs-table-bg: transparent; --bs-table-color: #E8EDF5; }
+[data-theme="dark"] .ranking-table thead th {
+  background: #0F192A; color: #8DA0B8; border-bottom-color: #1E2D42;
+}
+[data-theme="dark"] .ranking-table tbody tr { background: #131F30; }
+[data-theme="dark"] .ranking-table tbody tr:nth-child(even) { background: #0F192A; }
+[data-theme="dark"] .ranking-table tbody tr:hover { background: #1A2D45 !important; }
+[data-theme="dark"] .ranking-table tbody td {
+  color: #CBD5E1; border-bottom-color: #1E2D42;
+}
+[data-theme="dark"] .ranking-table tbody td strong { color: #E8EDF5; font-weight: 600; }
+[data-theme="dark"] .participant-name { color: #CBD5E1; }
+[data-theme="dark"] .text-muted { color: #4A5B74 !important; }
+
 /* Row highlights */
 .row-top1 { background: linear-gradient(90deg, rgba(212,175,55,.08), transparent); }
 .row-top1:hover { background: linear-gradient(90deg, rgba(212,175,55,.12), transparent) !important; }
 .row-top2 { background: linear-gradient(90deg, rgba(155,168,181,.06), transparent); }
 .row-top3 { background: linear-gradient(90deg, rgba(205,127,50,.06), transparent); }
 .row-peru { background: linear-gradient(90deg, rgba(255,0,0,.04), transparent); }
+[data-theme="dark"] .row-top1 { background: linear-gradient(90deg, rgba(212,175,55,.15), transparent) !important; }
+[data-theme="dark"] .row-top2 { background: linear-gradient(90deg, rgba(155,168,181,.10), transparent) !important; }
+[data-theme="dark"] .row-top3 { background: linear-gradient(90deg, rgba(205,127,50,.12), transparent) !important; }
+[data-theme="dark"] .row-peru { background: linear-gradient(90deg, rgba(255,80,80,.08), transparent) !important; }
 
 .rank-badge {
   display: inline-flex; align-items: center; justify-content: center;
