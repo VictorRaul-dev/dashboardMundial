@@ -12,7 +12,13 @@ const participantesPorPais = {
   '🇵🇪': [" Percy Gomez"," Victor Raul Cercado Lopez"," Karina Otárola"," Katya santos"," Patricia Suclupe",
         " Camila Herrán"," Jean Pierre RIOS MERCEDES"," Adriana Contreras"," Andy Balcazar"," Fernando Bruno Mamani Cáceda"],
   '🇨🇴': [],  // Agrega aquí participantes de Colombia
-  '🇲🇽': [" Erick Hernández"," Carlos Olvera"],  // Agrega aquí participantes de México
+  '🇲🇽': [" Erick Hernández"," Carlos Olvera"," Javier Rivera"," Paris Zermeño Cid"," Eduardo Rincón Gallardo",
+       "Esmeralda Cardenas","Francisco Lopez","Fernando Del Cueto","Aurea Vazquez","Alejandro Fernández Rojas","Mireya Gonzalez","Flor Lizbeth Gonzalez",
+        "Sandra Jeanine Coutiño Rico","Miguel Angel Ramírez","Javier Rivera","Alejandra Reyes Valencia","Jaime Lara","Rodrigo Gonzalez","Roberto Medina del Campo",
+        "Beatriz Vázquez","Stephany Tirado Guzmán","César García","Luis Daniel Ramírez","Mundo Burgos","Mauricio Guarneros","Eric Alan Lagunas Santoyo",
+        "Diego Armando Cruz Hernandez","Alejandro Mariano Ortega Ramírez","Maviael Hernández López","Magdiel Damian","Juan Manuel Gorostieta",
+        "Tonatiuh Hurtado","Benjamin Schmulson","Estefania Cárdenas","Jorge Vega","Carlos Ramirez","Iván Hernández Luna","Alain Jaimes Molina",
+],  // Agrega aquí participantes de México
   // '🇦🇷': [],
 };
 
