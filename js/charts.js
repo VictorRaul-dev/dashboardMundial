@@ -201,17 +201,32 @@ const ChartManager = (() => {
     const canvas = document.getElementById('scatterChart');
     if (!canvas || !DataStore.isLoaded()) return;
     _destroy('scatterChart');
+    const FLAG_COLORS = {
+      '🇵🇪': '#E74C3C', '🇨🇴': '#F1C40F', '🇲🇽': '#27AE60',
+      '🇦🇷': '#74B9FF', '🇧🇷': '#2ECC71', '🇺🇸': '#3498DB',
+      '🇪🇸': '#E67E22', '🇨🇱': '#C0392B',
+    };
     const points = DataStore.getScatterData(cutIdx);
-    const flagPts = points.filter(p => p.flag);
     const regularPts = points.filter(p => !p.flag);
-    const mkDataset = (data, label, color, radius = 5) => ({ label, data: data.map(p => ({ x: p.x, y: p.y, nombre: p.nombre, exacto: p.exacto })), backgroundColor: Utils.hexToRgba(color, .6), borderColor: color, borderWidth: 1, pointRadius: radius, pointHoverRadius: radius + 3 });
+    const mkDataset = (data, label, color, radius = 5) => ({
+      label, pointRadius: radius, pointHoverRadius: radius + 3,
+      backgroundColor: Utils.hexToRgba(color, .65), borderColor: color, borderWidth: 1.5,
+      data: data.map(p => ({ x: p.x, y: p.y, nombre: p.nombre, exacto: p.exacto })),
+    });
     const opts = _baseOpts();
     opts.scales.y.reverse = true;
     opts.scales.y.title = { display: true, text: 'Ranking', font: { family: FONT, size: 11 }, color: _textColor() };
     opts.scales.x.title = { display: true, text: 'Puntaje', font: { family: FONT, size: 11 }, color: _textColor() };
     opts.plugins.tooltip.callbacks = { label: ctx => { const d = ctx.raw; return [` ${d.nombre}`, ` Ranking: #${d.y}`, ` Puntaje: ${Utils.formatNumber(d.x)}`, ` Exactos: ${d.exacto}`]; } };
     const datasets = [mkDataset(regularPts, 'Participantes', '#2979D9', 5)];
-    if (flagPts.length) datasets.push(mkDataset(flagPts, 'Con bandera', '#E74C3C', 7));
+    // One dataset per country flag present in data
+    const byFlag = {};
+    points.filter(p => p.flag).forEach(p => { (byFlag[p.flag] = byFlag[p.flag] || []).push(p); });
+    Object.entries(byFlag).forEach(([flag, pts]) => {
+      const color = FLAG_COLORS[flag] || '#A29BFE';
+      const countryNames = { '🇵🇪': 'Perú', '🇨🇴': 'Colombia', '🇲🇽': 'México', '🇦🇷': 'Argentina', '🇧🇷': 'Brasil', '🇺🇸': 'USA', '🇪🇸': 'España', '🇨🇱': 'Chile' };
+      datasets.push(mkDataset(pts, flag + ' ' + (countryNames[flag] || flag), color, 8));
+    });
     _instances['scatterChart'] = new Chart(canvas, { type: 'scatter', data: { datasets }, options: opts });
   }
 
