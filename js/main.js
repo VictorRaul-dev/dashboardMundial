@@ -181,15 +181,15 @@ function _setupEventListeners() {
     _renderRankingTable();
   });
 
-  /* Table filter pills */
-  document.querySelectorAll('[data-tfilter]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('[data-tfilter]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      AppState.tableFilter = btn.dataset.tfilter;
-      AppState.tablePage = 1;
-      _renderRankingTable();
-    });
+  /* Table filter pills — delegated so dynamic country pills also work */
+  document.querySelector('.table-filter-pills')?.addEventListener('click', e => {
+    const btn = e.target.closest('[data-tfilter]');
+    if (!btn) return;
+    document.querySelectorAll('[data-tfilter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    AppState.tableFilter = btn.dataset.tfilter;
+    AppState.tablePage = 1;
+    _renderRankingTable();
   });
 
   /* Table column sort */
@@ -376,6 +376,23 @@ async function _handleAdminFileUpload(file, modal) {
 }
 
 /* ─── DASHBOARD INIT ──────────────────────────────────── */
+function _injectCountryPills() {
+  const container = document.getElementById('countryPillsContainer');
+  if (!container) return;
+  container.innerHTML = '';
+  const participants = new Set(DataStore.getParticipants().map(n => DataStore.getFlag(n)).filter(Boolean));
+  const countryNames = { '🇵🇪': 'Perú', '🇨🇴': 'Colombia', '🇲🇽': 'México', '🇦🇷': 'Argentina', '🇧🇷': 'Brasil', '🇺🇸': 'USA', '🇪🇸': 'España', '🇨🇱': 'Chile' };
+  for (const [flag, names] of Object.entries(participantesPorPais)) {
+    if (!names.length || !participants.has(flag)) continue;
+    const label = countryNames[flag] || flag;
+    const btn = document.createElement('button');
+    btn.className = 'pill';
+    btn.dataset.tfilter = `flag:${flag}`;
+    btn.textContent = `${flag} ${label}`;
+    container.appendChild(btn);
+  }
+}
+
 function _initDashboard() {
   if (!DataStore.isLoaded()) return;
 
@@ -385,6 +402,7 @@ function _initDashboard() {
   _populateCutSelects();
   _buildTimeline();
   _updateKPICards();
+  _injectCountryPills();
   _renderRankingTable();
   _renderOverviewCharts();
   _renderAnalysisSection();
@@ -558,11 +576,10 @@ function _renderRankingTable() {
 
   // Apply filter
   const f = AppState.tableFilter;
-  if (f === 'peru')   data = data.filter(r => r.isPeru);
-  if (f === 'top10')  data = data.filter(r => r.ranking <= 10);
-  if (f === 'top20')  data = data.filter(r => r.ranking <= 20);
-  if (f === 'top50')  data = data.filter(r => r.ranking <= 50);
-  if (f === 'exacto') data = data.filter(r => r.exacto > 0);
+  if (f === 'peru')          data = data.filter(r => r.isPeru);
+  if (f === 'top10')         data = data.filter(r => r.ranking <= 10);
+  if (f === 'exacto')        data = data.filter(r => r.exacto > 0);
+  if (f.startsWith('flag:')) data = data.filter(r => r.flag === f.slice(5));
 
   // Apply global top filter
   data = data.filter(r => r.ranking <= AppState.filterTop);
